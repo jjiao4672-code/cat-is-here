@@ -192,12 +192,12 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   ["fact", "meaning", "feeling", "move", "result"].forEach((key) => {
     if (sourceValuesByField[key]) cleanedMap[key] = cleanVisible(sourceValuesByField[key], `用户确认的地图字段 ${key}`);
   });
+  const brief = (value, max) => String(value).trim().replace(/[。.!?？]+$/, "").slice(0, max);
   if (["fact", "meaning", "feeling", "move"].every((key) => sourceValuesByField[key] && !missingMapValue.test(sourceValuesByField[key]))) {
     cleanedMap.hypothesis = (english
-      ? `Possibly, when “${cleanedMap.fact}” happened, you interpreted it as “${cleanedMap.meaning}”, felt “${cleanedMap.feeling}”, and then “${cleanedMap.move}”. This still needs testing.`
+      ? `Possibly: “${brief(cleanedMap.fact, 45)}” → “${brief(cleanedMap.meaning, 45)}” → “${brief(cleanedMap.feeling, 30)}” → “${brief(cleanedMap.move, 35)}”. This still needs testing.`
       : `可能是：发生“${cleanedMap.fact}”时，你把它理解为“${cleanedMap.meaning}”，感到“${cleanedMap.feeling}”，接着“${cleanedMap.move}”；这仍需验证。`).slice(0, 220);
   }
-  const brief = (value, max) => String(value).slice(0, max);
   const insight = language === "en"
     ? `Cat read what you wrote. Event: ${brief(cleanedMap.fact, 60)}. Interpretation: ${brief(cleanedMap.meaning, 50)}. Feeling: ${brief(cleanedMap.feeling, 35)}. Action: ${brief(cleanedMap.move, 45)}. Result: ${brief(cleanedMap.result, 55)}. You decide if this fits.`
     : `猫看完了。事情是：${brief(cleanedMap.fact, 24)}。你的解释是：${brief(cleanedMap.meaning, 22)}。感受是：${brief(cleanedMap.feeling, 14)}。接着做了：${brief(cleanedMap.move, 22)}。结果是：${brief(cleanedMap.result, 28)}。你看看像不像。`;
