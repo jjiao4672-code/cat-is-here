@@ -1,0 +1,767 @@
+<!doctype html>
+<!--
+  THESIS: A private paper desk where a cat helps people turn an emotional knot into one small next move, refusing the clinical questionnaire panel.
+  OWN-WORLD: Deep green exterior, cream paper surface, coral ink, moss rules, and one authored cat desk illustration.
+  STORY: A visitor understands that this is a gentle, local-first reflection, then reaches the first choice without being taught a system.
+  FIRST VIEWPORT: On desktop, the cat's paper desk sits alongside the opening words; on compact screens the words and first question win, with the illustration yielding its space.
+  FORM: Paper-desk workbench.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+<html lang="zh-CN" class="landing-visible">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>猫在｜Cat Is Here</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="preload" as="image" href="./assets/landing-studio-v1-4k.jpg" fetchpriority="high" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <section class="landing-screen" id="landingScreen" aria-labelledby="landingTitle">
+      <img class="landing-art" src="./assets/landing-studio-v1-4k.jpg" width="3840" height="2160" alt="阳光和植物之间，一只猫坐在桌后等候" fetchpriority="high" />
+      <div class="landing-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <header class="landing-header">
+        <img class="landing-logo" src="./assets/cat-is-here-logo-v1.png" alt="" />
+        <span>猫在</span>
+      </header>
+      <div class="landing-copy">
+        <h1 id="landingTitle">猫在</h1>
+        <p id="landingPromise">你暂时不必知道这意味着什么。先从发生的事说起。</p>
+      </div>
+      <button class="landing-enter" id="enterDeskButton" type="button" aria-describedby="landingTrust">我准备好了</button>
+      <p class="landing-boundary" id="landingTrust">由你决定保存什么 · AI 辅助反思 · 非心理治疗或危机支持</p>
+      <button class="landing-ai-link" id="landingAiDetailsButton" type="button" aria-haspopup="dialog">猫怎样使用 AI</button>
+    </section>
+    <main class="app-shell" aria-hidden="true" inert>
+      <section class="tool-surface" aria-labelledby="app-title">
+        <header class="topbar">
+          <div class="brand-lockup">
+            <img class="brand-mark" src="./assets/cat-is-here-logo-v1.png" alt="" aria-hidden="true" />
+            <h1 id="app-title">猫在</h1>
+          </div>
+          <div class="status-strip" aria-label="产品状态">
+            <a class="api-key-link hidden" id="setupApiKeyStatusLink" href="/api-setup.html">添加 API 密钥</a>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" id="networkPrivacyButton" type="button">联网说明</button>
+            <button class="ghost-button" id="historyButton" type="button">观察记录</button>
+            <button class="ghost-button" id="resetButton" type="button">重新开始</button>
+          </div>
+        </header>
+
+        <nav class="demo-nav hidden" id="demoNav" aria-label="关系困扰演示导航">
+          <span>固定演示 · 不联网 · 不保存</span>
+          <a class="api-key-link hidden" id="setupApiKeyNavLink" href="/api-setup.html">添加 API 密钥</a>
+          <button type="button" data-demo-view="question" data-competition-label="Input">提问</button>
+          <button type="button" data-demo-view="result" data-competition-label="Map">地图</button>
+          <button class="competition-only hidden" type="button" data-demo-view="experiment" data-competition-label="Test">实验</button>
+          <button type="button" data-demo-view="week" data-competition-label="Check">观察</button>
+          <button type="button" id="demoResetButton" data-competition-label="Reset">重置</button>
+        </nav>
+
+        <div class="desk-accents" aria-hidden="true">
+          <img class="desk-plant-accent" src="./assets/desk-plant-accent.png" alt="" />
+          <img class="desk-coffee-accent" src="./assets/desk-coffee-accent.png" alt="" />
+        </div>
+        <button class="notebook-hotspot" id="notebookHotspot" type="button" aria-label="打开笔记本，进入七日观察">
+          <svg class="notebook-glow" viewBox="0 0 545 585" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <filter id="notebookOutline" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+                <feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="expanded" />
+                <feComposite in="expanded" in2="SourceAlpha" operator="out" result="outline" />
+                <feGaussianBlur in="outline" stdDeviation="4.8" result="halo" />
+                <feFlood flood-color="#ffd978" flood-opacity=".55" result="haloColor" />
+                <feComposite in="haloColor" in2="halo" operator="in" result="coloredHalo" />
+                <feFlood flood-color="#fff3c2" flood-opacity=".78" result="lineColor" />
+                <feComposite in="lineColor" in2="outline" operator="in" result="coloredLine" />
+                <feMerge>
+                  <feMergeNode in="coloredHalo" />
+                  <feMergeNode in="coloredLine" />
+                </feMerge>
+              </filter>
+            </defs>
+            <image href="./assets/notebook-alpha-v1.png" x="0" y="0" width="545" height="585" preserveAspectRatio="none" filter="url(#notebookOutline)" />
+          </svg>
+          <span>打开七日观察</span>
+        </button>
+        <button class="map-hotspot" id="mapHotspot" type="button" aria-label="打开问题地图">
+          <svg viewBox="0 0 180 420" preserveAspectRatio="none" aria-hidden="true">
+            <path class="map-hotspot-glow" d="M2 14 L24 6 L158 354 L116 416 L2 418 Z" />
+          </svg>
+          <span id="mapHotspotHint">完成问题整理后，地图会收在这里</span>
+        </button>
+        <div class="scene-interactions" aria-label="桌面上的小互动">
+          <button class="scene-hotspot scene-hotspot-coffee" type="button" data-desk-effect="coffee" aria-label="轻点咖啡杯">
+            <svg viewBox="0 0 200 180" aria-hidden="true">
+              <ellipse class="scene-effect coffee-ripple coffee-ripple-one" cx="92" cy="91" rx="39" ry="17" />
+              <ellipse class="scene-effect coffee-ripple coffee-ripple-two" cx="92" cy="91" rx="39" ry="17" />
+              <path class="scene-effect coffee-steam coffee-steam-one" d="M72 72 C58 55 84 48 70 29" />
+              <path class="scene-effect coffee-steam coffee-steam-two" d="M105 69 C91 52 118 43 105 23" />
+            </svg>
+          </button>
+          <button class="scene-hotspot scene-hotspot-paws" type="button" data-desk-effect="paws" aria-label="轻点猫爪">
+            <svg viewBox="0 0 260 190" aria-hidden="true">
+              <g class="scene-effect paw-print paw-print-left" transform="translate(88 174)">
+                <ellipse cx="0" cy="12" rx="13" ry="10" />
+                <circle cx="-14" cy="-2" r="5" /><circle cx="0" cy="-8" r="5" /><circle cx="14" cy="-2" r="5" />
+              </g>
+              <g class="scene-effect paw-print paw-print-right" transform="translate(171 178)">
+                <ellipse cx="0" cy="12" rx="13" ry="10" />
+                <circle cx="-14" cy="-2" r="5" /><circle cx="0" cy="-8" r="5" /><circle cx="14" cy="-2" r="5" />
+              </g>
+            </svg>
+          </button>
+          <button class="scene-hotspot scene-hotspot-flowers" type="button" data-desk-effect="flowers" aria-label="轻点桌边的小花">
+            <svg viewBox="0 0 180 300" aria-hidden="true">
+              <ellipse class="scene-effect flower-petal flower-petal-one" cx="49" cy="52" rx="5" ry="12" transform="rotate(-28 49 52)" />
+              <ellipse class="scene-effect flower-petal flower-petal-two" cx="76" cy="73" rx="5" ry="12" transform="rotate(32 76 73)" />
+              <ellipse class="scene-effect flower-petal flower-petal-three" cx="34" cy="91" rx="5" ry="12" transform="rotate(-58 34 91)" />
+              <circle class="scene-effect flower-glint" cx="60" cy="80" r="28" />
+            </svg>
+          </button>
+        </div>
+        <section class="hero-row" aria-label="猫在">
+          <svg class="dialogue-frame" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M24 25 C166 19 318 27 485 22 C632 18 719 22 774 24 L786 9 L800 25 C862 22 929 26 974 24 C985 26 990 35 989 49 L986 91 C985 103 974 107 958 105 C720 101 493 108 260 104 C164 102 85 108 28 103 C16 101 11 93 12 80 L15 43 C16 33 19 28 24 25 Z" />
+            <path class="dialogue-frame-echo" d="M27 28 C170 22 321 29 487 25 C635 21 721 24 776 27 L787 13 L798 28 C864 25 930 29 971 27 C981 29 985 37 984 49 L982 89 C981 98 971 102 956 101 C720 98 491 104 261 101 C164 99 88 104 31 100 C22 98 17 91 18 81 L20 45 C21 36 23 31 27 28 Z" />
+          </svg>
+          <div class="intro">
+            <p class="scene-label" id="sceneLabel">猫在</p>
+            <h2 id="heroTitle">难受的时候，先坐一会儿。<br />猫帮你理一理。</h2>
+            <p id="heroDescription">
+              猫会问几道很短的问题，陪你停一下、看事实，再邀请你试一个做得到的小动作。
+            </p>
+            <div class="privacy-note">
+              <strong id="privacyTitle">话留在桌上</strong>
+              <span id="privacyDescription">安全判断在当前浏览器完成；继续后，本轮回答和主动填写的文字会用于联网生成问题地图，历史记录不会自动发送。</span>
+            </div>
+          </div>
+          <figure class="desk-illustration">
+            <img src="./assets/tabby-therapist.png" alt="圆脸梨花猫趴在手写问题整理本前" />
+            <figcaption>猫不替你下结论，只陪你留意今天发生了什么。</figcaption>
+          </figure>
+        </section>
+
+        <section class="progress-wrap" aria-label="进度">
+          <div class="progress-meta">
+            <span id="stepLabel">猫的第一问</span>
+            <span id="selectedCount">慢慢选就好</span>
+          </div>
+          <div class="progress-track"><div id="progressBar"></div></div>
+        </section>
+
+        <section class="question-panel" id="questionPanel">
+          <div class="question-stack">
+            <div class="question-sheet">
+              <div class="question-sheet-content">
+                <div class="question-head">
+                  <p id="questionKicker">现在状态</p>
+                  <h2 id="questionTitle"></h2>
+                  <p id="questionHint"></p>
+                </div>
+                <div class="options-grid" id="optionsGrid"></div>
+                <div class="competition-examples hidden" id="competitionExamples" aria-label="示例输入">
+                  <span id="competitionExampleLabel">需要时使用示例：</span>
+                  <button type="button" data-example-case="relationship">关系示例</button>
+                  <button type="button" data-example-case="job_search">求职示例</button>
+                </div>
+                <section class="similar-memory hidden" id="similarMemory" aria-live="polite">
+                  <p>这让我想起你上次留给小猫的一件事，好像有一点相似。要一起看看吗？</p>
+                  <div class="actions">
+                    <button class="secondary-button" id="reviewSimilarButton" type="button">一起看看</button>
+                    <button class="ghost-button" id="dismissSimilarButton" type="button">这次不看</button>
+                  </div>
+                  <small id="similarMemoryDetail"></small>
+                </section>
+                <section class="grounding-step hidden" id="groundingStep" aria-live="polite">
+                  <span class="grounding-pulse" aria-hidden="true"></span>
+                  <p>双脚感受地面的支撑。慢慢呼气，然后依次看见身边三个物体。</p>
+                  <button class="secondary-button" id="groundingTimerButton" type="button">开始 30 秒</button>
+                  <strong id="groundingTimerStatus">随时可以跳过</strong>
+                </section>
+                <div class="reflection-metric hidden" id="confusionMetric">
+                  <label for="confusionLevel">现在这件事在脑中有多乱？<output id="confusionOutput">5</output>/10</label>
+                  <input id="confusionLevel" type="range" min="0" max="10" value="5" />
+                  <span>只用于这次整理，不解释成症状；除非你之后选择“留给小猫”，否则不会保存。</span>
+                </div>
+                <div class="free-note-wrap">
+                  <label for="freeNote">还有一句话想告诉猫吗？（可以不写）</label>
+                  <textarea id="freeNote" rows="2" maxlength="160" placeholder="例如：我明知道该开始，但就是一直拖。"></textarea>
+                </div>
+              </div>
+            </div>
+            <img class="paper-foreground-plant" src="./assets/desk-foreground-v7-4k.png" alt="" aria-hidden="true" />
+          </div>
+          <div class="actions">
+            <button class="question-cta question-cta-prev" id="backButton" type="button">
+              <span class="hover-underline-animation">上一问</span>
+              <svg aria-hidden="true" width="30" height="10" viewBox="0 0 46 16"><path d="M8,0,6.545,1.455l5.506,5.506H-30V9.039H12.052L6.545,14.545,8,16l8-8Z" transform="translate(30)"></path></svg>
+            </button>
+            <button class="question-cta question-cta-next" id="nextButton" type="button">
+              <span class="hover-underline-animation">下一问</span>
+              <svg aria-hidden="true" width="30" height="10" viewBox="0 0 46 16"><path d="M8,0,6.545,1.455l5.506,5.506H-30V9.039H12.052L6.545,14.545,8,16l8-8Z" transform="translate(30)"></path></svg>
+            </button>
+          </div>
+        </section>
+
+        <section class="followup-panel hidden" id="followupPanel" aria-live="polite">
+          <div class="question-stack">
+            <div class="question-sheet">
+              <div class="question-sheet-content">
+                <div class="followup-mark" aria-hidden="true">猫</div>
+                <div class="question-head">
+                  <p id="followupKicker">猫还缺三条信息</p>
+                  <p class="followup-reflection" id="followupReflection"></p>
+                  <h2 id="followupTitle"></h2>
+                  <p id="followupHint"></p>
+                </div>
+                <div class="followup-options" id="followupOptions"></div>
+                <div class="free-note-wrap">
+                  <label for="followupNote">选项没说准时，可以补充一句（不会自动保存）</label>
+                  <textarea id="followupNote" rows="2" maxlength="240"></textarea>
+                </div>
+              </div>
+            </div>
+            <img class="paper-foreground-plant" src="./assets/desk-foreground-v7-4k.png" alt="" aria-hidden="true" />
+          </div>
+          <div class="actions">
+            <button class="question-cta question-cta-prev" id="followupBackButton" type="button">
+              <span class="hover-underline-animation">上一题</span>
+              <svg aria-hidden="true" width="30" height="10" viewBox="0 0 46 16"><path d="M8,0,6.545,1.455l5.506,5.506H-30V9.039H12.052L6.545,14.545,8,16l8-8Z" transform="translate(30)"></path></svg>
+            </button>
+            <button class="question-cta question-cta-next" id="followupNextButton" type="button" disabled>
+              <span class="hover-underline-animation">整理回答</span>
+              <svg aria-hidden="true" width="30" height="10" viewBox="0 0 46 16"><path d="M8,0,6.545,1.455l5.506,5.506H-30V9.039H12.052L6.545,14.545,8,16l8-8Z" transform="translate(30)"></path></svg>
+            </button>
+            <button class="ghost-button followup-finish hidden" id="finishFollowupsButton" type="button">先整理到这里</button>
+          </div>
+        </section>
+
+        <section class="desk-state-panel hidden" id="deskStatePanel" aria-live="polite">
+          <div class="question-stack">
+            <div class="question-sheet">
+              <div class="question-sheet-content desk-state-content">
+                <section class="experiment-step hidden" id="experimentStep">
+                  <span class="result-step">带着这个猜想，试一个自己能控制的小动作</span>
+                  <h2>先做这一个小实验</h2>
+                  <p>它只改一个动作。情绪没有马上缓解、结果推翻原猜测，或暂时还不知道，都不是失败。</p>
+                  <details class="experiment-guide hidden">
+                    <summary>第一次填？先看一个完整例子</summary>
+                    <p>选中下面的实验，四栏会自动填好；你只需要改掉不符合自己的部分。</p>
+                    <dl>
+                      <div><dt>预测</dt><dd>如果我不马上追问，对方会更疏远，我的不安会一直上升。</dd></div>
+                      <div><dt>第一步</dt><dd>回复变慢时，先记下预测，再把第二次确认延迟 15 分钟。</dd></div>
+                      <div><dt>观察</dt><dd>观察 15 分钟，记录有没有新事实和自己实际做了什么。</dd></div>
+                      <div><dt>停止</dt><dd>现实风险升高或明显无法承受时停止；做不到时缩小动作。</dd></div>
+                    </dl>
+                  </details>
+                  <div class="experiment-proposal">
+                    <label for="experimentProposal">如果只做一件很小的事，你觉得什么动作能让你多知道一点？</label>
+                    <textarea id="experimentProposal" rows="2" maxlength="320" placeholder="写下你想到的第一步"></textarea>
+                    <small>这件事由你决定。可以停止。做完能多得到一条事实。</small>
+                    <div class="experiment-actions">
+                      <button class="primary-button" id="useOwnExperimentButton" type="button">看看这个动作是否合适</button>
+                      <button class="secondary-button" id="showCatSuggestionButton" type="button">我还想不到</button>
+                    </div>
+                  </div>
+                  <div class="experiment-options hidden" id="experimentOptions"></div>
+                  <div class="experiment-fields hidden" id="experimentFields">
+                    <label for="experimentPrediction">原来的判断</label>
+                    <textarea id="experimentPrediction" rows="2" maxlength="280" placeholder="不确定时可以写：这次只观察，不预设结果。"></textarea>
+                    <label for="experimentAction">我要做</label>
+                    <textarea id="experimentAction" rows="2" maxlength="320"></textarea>
+                    <label for="experimentOutcome">我会观察</label>
+                    <textarea id="experimentOutcome" rows="2" maxlength="320"></textarea>
+                    <label for="experimentContinue">继续条件</label>
+                    <textarea id="experimentContinue" rows="2" maxlength="280"></textarea>
+                    <label for="experimentFallback">停止条件</label>
+                    <textarea id="experimentFallback" rows="2" maxlength="280"></textarea>
+                    <label for="experimentMeaning">不同结果分别说明什么</label>
+                    <textarea id="experimentMeaning" rows="2" maxlength="320"></textarea>
+                    <label for="experimentTiming">现在能做哪一步？</label>
+                    <select id="experimentTiming">
+                      <option value="now">现在做</option>
+                      <option value="later">设为待办</option>
+                      <option value="not_now">先不做</option>
+                    </select>
+                    <div class="experiment-schedule hidden" id="experimentSchedule">
+                      <label for="experimentWhen">时间</label><input id="experimentWhen" type="datetime-local" />
+                      <label for="experimentContext">场景</label><input id="experimentContext" type="text" maxlength="120" />
+                    </div>
+                    <label class="remember-choice"><input id="needsPattern" type="checkbox" /> 需要比较重复情境时，开启七日观察</label>
+                    <label class="remember-choice"><input id="rememberForCat" type="checkbox" /> 留给小猫</label>
+                    <small>不勾选就不保存。勾选后，只在当前浏览器保存你确认过的事件摘要、地图、已问问题、实验和观察结果；不保存逐字对话，可在“观察记录”中删除。</small>
+                  </div>
+                  <div class="experiment-actions">
+                    <button class="secondary-button hidden" id="restoreExperimentButton" type="button">恢复猫的原建议</button>
+                    <button class="secondary-button hidden" id="cancelCycleExperimentButton" type="button">取消调整</button>
+                    <button class="secondary-button" id="deskExperimentMapButton" type="button">查看问题地图</button>
+                    <button class="primary-button" id="startCycleButton" type="button" disabled>确认这张实验卡</button>
+                  </div>
+                  <p id="saveStatus" class="confirm-status" aria-live="polite"></p>
+                </section>
+
+                <section class="journey-step hidden" id="actionWaitStep" aria-live="polite">
+                  <span class="result-step" id="actionWaitStatus">现在做</span>
+                  <h2 id="actionWaitTitle">猫在这里等你。</h2>
+                  <p id="actionWaitCopy">做完以后，只告诉猫实际发生了什么。</p>
+                  <label for="actionPreparation">临时准备（默认不保存）</label>
+                  <textarea id="actionPreparation" rows="3" maxlength="500"></textarea>
+                  <div class="journey-actions">
+                    <button class="primary-button" id="actionDoneButton" type="button">我完成了</button>
+                    <button class="secondary-button" id="actionNotDoneButton" type="button">我没有做</button>
+                    <button class="ghost-button" id="actionShrinkButton" type="button">需要把动作再缩小一点</button>
+                  </div>
+                </section>
+
+                <section class="journey-step hidden" id="todoStep" aria-live="polite">
+                  <span class="result-step">设为待办</span>
+                  <h2>把动作放进一个具体时刻</h2>
+                  <p id="todoSummary"></p>
+                  <div class="journey-actions">
+                    <button class="primary-button" id="copyTodoButton" type="button">复制待办</button>
+                    <button class="secondary-button" id="todoDoneButton" type="button">回来记录结果</button>
+                    <button class="ghost-button" id="todoEndButton" type="button">今天先到这里</button>
+                  </div>
+                </section>
+
+                <section class="journey-step hidden" id="blockedStep" aria-live="polite">
+                  <span class="result-step">先不做</span>
+                  <h2>这一步现在可能还太大，或者不适合。</h2>
+                  <label for="blockedPart">你停在哪一部分？</label>
+                  <textarea id="blockedPart" rows="2" maxlength="280"></textarea>
+                  <div class="journey-actions">
+                    <button class="primary-button" id="shrinkFromBlockButton" type="button">把动作缩小一点</button>
+                    <button class="ghost-button" id="blockedEndButton" type="button">今天先到这里</button>
+                  </div>
+                </section>
+
+                <section class="journey-step hidden" id="observationStep" aria-live="polite">
+                  <span class="result-step">观察与更新</span>
+                  <h2>先把担心和实际发生分开。</h2>
+                  <div class="observation-compare">
+                    <div><span>原来担心的是</span><p id="observationPrediction"></p></div>
+                    <div><label for="observationActual">实际发生的是</label><textarea id="observationActual" rows="3" maxlength="500"></textarea></div>
+                  </div>
+                  <fieldset class="update-choices">
+                    <legend>现在看，原来的担心怎么样了？</legend>
+                    <label><input type="radio" name="cognitiveUpdate" value="same" /> 这次发生的和我担心的一样</label>
+                    <label><input type="radio" name="cognitiveUpdate" value="mixed" /> 有一部分一样，也有不同</label>
+                    <label><input type="radio" name="cognitiveUpdate" value="different" /> 这次发生的和我担心的不一样</label>
+                    <label><input type="radio" name="cognitiveUpdate" value="unknown" /> 现在还看不出来</label>
+                    <label><input type="radio" name="cognitiveUpdate" value="custom" /> 我想自己写</label>
+                  </fieldset>
+                  <label class="hidden" id="cognitiveUpdateCustomLabel" for="cognitiveUpdateCustom">我现在的看法</label>
+                  <textarea class="hidden" id="cognitiveUpdateCustom" rows="2" maxlength="320"></textarea>
+                  <p class="confirm-status" id="observationStatus"></p>
+                  <button class="primary-button" id="finishObservationButton" type="button">按我的判断整理</button>
+                </section>
+
+                <section class="journey-step hidden" id="journeyClosingStep" aria-live="polite">
+                  <span class="result-step">这次整理</span>
+                  <h2>这次先到这里。</h2>
+                  <dl class="closing-summary-list">
+                    <div><dt>原来的判断</dt><dd id="journeyOriginal"></dd></div>
+                    <div><dt>实际发生</dt><dd id="journeyActual"></dd></div>
+                    <div><dt>我现在怎么看</dt><dd id="journeyUpdate"></dd></div>
+                    <div><dt>还不知道</dt><dd id="journeyUnknown"></dd></div>
+                    <div><dt>猫的总结</dt><dd id="journeySummary"></dd></div>
+                  </dl>
+                  <fieldset class="save-choices">
+                    <legend>要留下什么？</legend>
+                    <label><input type="radio" name="journeySave" value="remember" /> 留给小猫</label>
+                    <label><input type="radio" name="journeySave" value="discard" checked /> 不保存，结束</label>
+                    <label><input type="radio" name="journeySave" value="later" /> 稍后回来记录结果</label>
+                  </fieldset>
+                  <small id="journeySaveNote">只保存你确认过的地图、实验、实际行动、观察和总结，不保存完整对话。比赛模式始终不保存。</small>
+                  <p id="journeyClosingLine">这次先到这里。下次遇到相似的事，猫还在。</p>
+                  <button class="primary-button" id="finishJourneyButton" type="button">结束这次</button>
+                </section>
+
+                <section class="desk-cycle-view hidden" id="cycleDashboard">
+                  <span class="result-step" id="cycleDayLabel">七日观察</span>
+                  <h2 id="cycleTopicTitle"></h2>
+                  <p id="cycleExperimentSummary"></p>
+                  <div class="desk-cycle-status">
+                    <article><span>今天</span><strong id="todayCheckinStatus">尚未打卡</strong></article>
+                    <article><span>周期进度</span><strong id="cycleProgressStatus">0 / 7</strong></article>
+                  </div>
+                  <div class="cycle-primary-actions">
+                    <button class="primary-button" id="startCheckinButton" type="button">开始今日打卡</button>
+                    <button class="secondary-button hidden" id="completeCycleButton" type="button">完成本轮观察</button>
+                  </div>
+                  <details class="cycle-more-actions">
+                    <summary>查看记录或调整本轮实验</summary>
+                    <div class="desk-state-actions">
+                    <button class="secondary-button" id="deskOpenJournalButton" type="button">翻开七日手账</button>
+                    <button class="secondary-button" id="deskOpenMapButton" type="button">查看问题地图</button>
+                    <button class="secondary-button" id="editCycleExperimentButton" type="button">调整当前实验</button>
+                    <button class="secondary-button hidden" id="recallCheckinButton" type="button">补记昨天</button>
+                    <button class="secondary-button hidden" id="stageReportButton" type="button"></button>
+                    <button class="secondary-button" id="restartAnalysisButton" type="button">重新开始</button>
+                    </div>
+                  </details>
+                  <p id="cycleDashboardStatus" class="confirm-status"></p>
+                  <section class="competition-closing-letter hidden" id="competitionClosingLetter" aria-labelledby="competitionClosingTitle">
+                    <span>CLOSING LETTER</span>
+                    <h3 id="competitionClosingTitle">What the observations changed</h3>
+                    <p>Original judgment: asking would make the relationship end. Actual observation: you sent a clear invitation, and the reply was only “Saturday works.” You completed the controllable step by starting the conversation. Where the relationship will go remains unknown.</p>
+                    <small>Missing a check-in or an experiment is information, not failure.</small>
+                  </section>
+                </section>
+              </div>
+            </div>
+            <img class="paper-foreground-plant" src="./assets/desk-foreground-v7-4k.png" alt="" aria-hidden="true" />
+          </div>
+        </section>
+
+        <section class="result-panel hidden" id="resultPanel" aria-live="polite">
+          <section class="stage-sheet stage-sheet-one">
+            <button class="result-close" id="closeResultButton" type="button" aria-label="关闭问题地图并回到桌面">×</button>
+            <div class="result-header">
+              <span class="result-step">问题地图</span>
+              <h2 id="resultTitle"></h2>
+              <p id="resultSummary"></p>
+            </div>
+
+          <section class="deep-update-card hidden" id="deepUpdateCard" aria-live="polite">
+            <strong>刚才补充的回答已经放回这张地图</strong>
+            <p id="deepUpdateSummary"></p>
+          </section>
+
+          <details class="hypothesis-path hidden">
+            <summary class="hypothesis-path-head">
+              <h3>展开当前过程</h3>
+              <span>逐项查看与核对</span>
+            </summary>
+            <ol id="cycleList"></ol>
+          </details>
+
+          <section class="deep-dive-card hidden" id="deepDiveCard">
+            <div>
+              <span class="stage-label" id="deepDiveLabel">联网生成的问题地图</span>
+              <h3 id="deepDiveTitle">稍等，猫在整理刚才说到的事</h3>
+              <p id="deepDiveDescription">基础安全判断已完成；本轮结构化回答正在用于生成可修改的地图。</p>
+            </div>
+            <div class="depth-actions">
+              <button class="secondary-button" id="skipDeepButton" type="button">使用当前地图</button>
+              <button class="secondary-button hidden" id="setupApiKeyButton" type="button">添加 API 密钥</button>
+              <button class="primary-button" id="deepDiveButton" type="button">补 3 道核对题</button>
+            </div>
+            <p id="deepDiveStatus" aria-live="polite"></p>
+          </section>
+
+          <section class="answer-core-card hidden" id="answerCoreCard" aria-label="当前智能回答结构">
+            <div class="result-grid">
+              <article>
+                <span>发生的线索</span>
+                <p id="surfaceProblem"></p>
+              </article>
+              <article>
+                <span>你的解释</span>
+                <p id="protectivePurpose"></p>
+              </article>
+              <article>
+                <span>感受</span>
+                <p id="feelingResult"></p>
+              </article>
+              <article>
+                <span>做了或没有做什么</span>
+                <p id="actionResult"></p>
+              </article>
+              <article>
+                <span>带来的结果</span>
+                <p id="nextStep"></p>
+              </article>
+              <article>
+                <span>可能的待验证猜测</span>
+                <p id="adlerFrame"></p>
+              </article>
+              <article>
+                <span>仍然不知道什么</span>
+                <p id="unknownResult"></p>
+              </article>
+            </div>
+          </section>
+
+          <section class="evidence-disclosure map-flow-section">
+            <section class="deep-result-card" id="deepResultCard">
+              <div class="deep-result-head">
+                <div>
+                  <span>可以修改的暂时猜想</span>
+                  <h3>完整问题地图</h3>
+                </div>
+                <span class="local-chip">由你确认</span>
+              </div>
+              <div class="deep-map-grid" id="deepMapFields"></div>
+              <div class="alternatives-list" id="alternativesList"></div>
+              <details class="concepts-wrap hidden">
+                <summary>可能相关的心理概念</summary>
+                <div id="conceptList"></div>
+              </details>
+            </section>
+          </section>
+          </section>
+
+          <section class="confirm-card stage-sheet stage-sheet-two">
+            <span class="result-step">先核对</span>
+              <h3>猫这样排，对吗？</h3>
+            <p>不用迁就猫。只有你确认过的部分，才值得带进一次现实核对。</p>
+            <div class="confirm-actions">
+              <button type="button" data-feedback="很像">很像</button>
+              <button type="button" data-feedback="有一点像">有一点像</button>
+              <button type="button" data-feedback="不太像">猫看偏了</button>
+            </div>
+            <div class="correction-wrap hidden" id="mapCorrectionWrap">
+              <label for="mapCorrection" id="mapCorrectionLabel">哪一段不太像？</label>
+              <textarea id="mapCorrection" rows="2" maxlength="240"></textarea>
+              <button class="secondary-button" id="applyMapCorrectionButton" type="button">按我的话修改</button>
+            </div>
+            <p class="confirm-status" id="confirmStatus" aria-live="polite"></p>
+            <div class="confirm-next-actions">
+              <button class="secondary-button" id="continueDeepButton" type="button">继续问清楚</button>
+              <button class="primary-button" id="toExperimentButton" type="button" disabled>一起想一个小动作</button>
+              <button class="ghost-button" id="finishAtMapButton" type="button">今天先到这里</button>
+            </div>
+            <div class="reflection-metric">
+              <label for="clarityLevel">现在下一步有多清楚？<output id="clarityOutput">5</output>/10</label>
+              <input id="clarityLevel" type="range" min="0" max="10" value="5" />
+              <span>只衡量这次整理是否带来清晰度，不代表情绪改善。</span>
+            </div>
+          </section>
+
+          <details class="coach-disclosure">
+            <summary>还想问猫一个问题？<span>联网可选</span></summary>
+            <section class="coach-card" id="coachCard">
+              <div class="coach-head">
+                <div>
+                  <h3>再问猫一个小问题</h3>
+                </div>
+              </div>
+              <div class="coach-prompts" aria-label="快捷问题">
+                <button type="button" data-prompt="我现在该做什么？">我现在该做什么？</button>
+                <button type="button" data-prompt="为什么我会这样？">为什么我会这样？</button>
+                <button type="button" data-prompt="怎么和别人说？">怎么和别人说？</button>
+                <button type="button" data-prompt="这不是治疗吧？">这不是治疗吧？</button>
+              </div>
+              <label class="coach-input-label" for="coachQuestion">你还想问猫什么？</label>
+              <div class="coach-input-row">
+                <input id="coachQuestion" maxlength="120" placeholder="例如：我明天还是不敢开始怎么办？" />
+                <button class="primary-button" id="coachAskButton" type="button">让猫联网回答</button>
+              </div>
+              <div class="coach-answer" id="coachAnswer">
+                <span>当前结果仍保留</span>
+                <p>问题可以很短。这里只会额外发送当前问题地图和你主动提交的这句话，长期记录不会自动发送。</p>
+              </div>
+            </section>
+          </details>
+
+          <p class="disclaimer">
+            猫要认真说明：这里提供的是自我反思，不是心理治疗、医学诊断或危机干预。如果你有自伤、轻生或正在遭受暴力的风险，请立即联系身边可信任的人、当地急救服务或危机热线。
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="journal-dialog" id="journalDialog" aria-label="七日观察手账">
+      <div class="journal-book" id="journalBook">
+        <button class="journal-close" id="closeJournalButton" type="button" aria-label="合上七日观察手账">×</button>
+        <div class="journal-pages">
+          <section class="journal-cover" id="journalCover">
+            <div class="journal-overview">
+              <div class="cycle-dashboard-head journal-overview-head">
+                <div>
+                  <span id="journalOverviewDayLabel">七日观察</span>
+                  <h2 id="journalOverviewTitle">还没有开始观察</h2>
+                  <p id="journalOverviewExperiment">先完成一次问题整理，选定一个想验证的小实验。</p>
+                </div>
+                <div class="cycle-dashboard-actions">
+                  <button class="secondary-button hidden" id="viewCycleMapButton" type="button">查看问题地图</button>
+                  <button class="primary-button" id="journalStartButton" type="button">先去整理问题</button>
+                </div>
+              </div>
+              <div class="seven-day-track" id="journalSevenDayTrack" aria-label="七日记录状态"></div>
+              <div class="mini-trends" id="journalMiniTrends" aria-label="七日困扰与功能影响"></div>
+              <div class="change-cards" id="journalChangeCards"></div>
+              <p class="confirm-status" id="journalOverviewStatus">七天记录会在这里排成一张表。</p>
+            </div>
+            <button class="journal-page-button journal-page-next journal-cover-next hidden" id="journalCoverNextButton" type="button" aria-label="翻到每日记录">→</button>
+          </section>
+          <section class="journal-spread hidden" id="journalSpread" aria-live="polite">
+            <button class="journal-page-button journal-page-prev" id="journalPrevButton" type="button" aria-label="上一页">←</button>
+            <article class="journal-day-page" id="journalLeftPage"></article>
+            <article class="journal-day-page" id="journalRightPage"></article>
+            <button class="journal-page-button journal-page-next" id="journalNextButton" type="button" aria-label="下一页">→</button>
+          </section>
+        </div>
+        <div class="journal-turn-page" aria-hidden="true"></div>
+      </div>
+    </dialog>
+
+    <dialog class="checkin-dialog" id="checkinDialog">
+      <div class="history-head">
+        <div>
+          <span id="checkinModeLabel">今日即时记录</span>
+          <h2 id="checkinTitle">今天发生了什么？</h2>
+        </div>
+        <button class="ghost-button" id="closeCheckinButton" type="button">关闭</button>
+      </div>
+      <form id="checkinForm">
+        <input id="checkinDate" type="hidden" />
+        <input id="checkinMode" type="hidden" />
+        <section class="checkin-context" aria-label="本轮观察目标">
+          <div><span>目标情境</span><strong id="checkinTargetContext"></strong></div>
+          <div><span>选定实验</span><strong id="checkinExperimentContext"></strong></div>
+        </section>
+        <fieldset>
+          <legend>1. 今天出现目标情境了吗？</legend>
+          <select id="eventOccurrence" required>
+            <option value="">请选择</option>
+            <option value="yes">出现了</option>
+            <option value="mild">出现了相近但更轻的情况</option>
+            <option value="no">今天没有发生</option>
+          </select>
+          <div class="checkin-event-fields hidden" id="checkinEventFields">
+            <label for="eventNote">今天最有代表性的一次发生了什么？（可不写）</label>
+            <textarea id="eventNote" rows="2" maxlength="280"></textarea>
+            <label for="distressLevel">行动前困扰强度：<output id="distressOutput">5</output>/10</label>
+            <input id="distressLevel" type="range" min="0" max="10" value="5" />
+          </div>
+        </fieldset>
+        <fieldset class="hidden" id="checkinExperimentFields">
+          <legend>2. 选定实验进行得怎样？</legend>
+          <select id="experimentDone" required>
+            <option value="">请选择</option>
+            <option value="yes">按计划做了</option>
+            <option value="partial">做了一部分</option>
+            <option value="no">这次没有做</option>
+            <option value="not_applicable">今天没有适用情境</option>
+          </select>
+          <label for="distressAfter">行动后约 10-20 分钟，困扰强度：<output id="distressAfterOutput">5</output>/10</label>
+          <input id="distressAfter" type="range" min="0" max="10" value="5" />
+          <label for="experimentResult">实际发生了什么，或什么阻止了实验？（一句话即可）</label>
+          <textarea id="experimentResult" rows="2" maxlength="320"></textarea>
+        </fieldset>
+        <details class="checkin-optional" id="checkinOptional">
+          <summary>可选：补充新信息与日常影响</summary>
+          <fieldset>
+            <legend>补充核对</legend>
+            <label for="checkinLearning">这次最重要的新信息是什么？</label>
+            <textarea id="checkinLearning" rows="2" maxlength="280"></textarea>
+            <select id="evidenceDirection">
+              <option value="">暂时不分类</option>
+              <option value="supports">和原来的担心更一致</option>
+              <option value="weakens">和原来的担心不一致</option>
+              <option value="unclear">仍然无法判断</option>
+              <option value="alternative">更符合另一种原因</option>
+            </select>
+            <label for="alternativeHypothesis">你想并列验证的新解释（可不写）</label>
+            <textarea id="alternativeHypothesis" rows="2" maxlength="240"></textarea>
+            <label for="functionLevel">对今天生活功能的影响：<output id="functionOutput">5</output>/10</label>
+            <input id="functionLevel" type="range" min="0" max="10" value="5" />
+          </fieldset>
+        </details>
+        <button class="primary-button" id="saveCheckinButton" type="submit">保存今天的记录</button>
+        <p id="checkinStatus" class="confirm-status" aria-live="polite"></p>
+      </form>
+    </dialog>
+
+    <dialog class="stage-dialog" id="stageDialog">
+      <div class="history-head">
+        <div>
+          <span>阶段联网整理</span>
+          <h2 id="stageDialogTitle">生成阶段报告</h2>
+        </div>
+        <button class="ghost-button" id="closeStageButton" type="button">关闭</button>
+      </div>
+      <p>将发送以下结构化内容：当前问题地图、选定实验、每日是否发生目标情境、困扰与功能评分、实验结果和证据方向。不会发送初始自由文字或完整 AI 对话。</p>
+      <div class="stage-preview" id="stagePreview"></div>
+      <button class="primary-button" id="confirmStageButton" type="button">生成阶段报告</button>
+      <div class="stage-result hidden" id="stageResult"></div>
+    </dialog>
+
+    <dialog class="cycle-complete-dialog" id="cycleCompleteDialog">
+      <div class="history-head">
+        <div>
+          <span id="cycleCompleteKicker">先保存结论，再生成 AI 回信</span>
+          <h2 id="cycleCompleteTitle">这一轮可以停在这里</h2>
+        </div>
+        <button class="ghost-button" id="closeCycleCompleteButton" type="button">关闭</button>
+      </div>
+      <div class="local-cycle-summary" id="localCycleSummary"></div>
+      <p class="cycle-completion-hint" id="cycleCompletionHint"></p>
+      <fieldset class="completion-choice" id="hypothesisDecision">
+        <legend>现在怎样看原来的猜想？</legend>
+        <label><input type="radio" name="hypothesisDecision" value="keep" /> 记录暂时支持原来的猜想</label>
+        <label><input type="radio" name="hypothesisDecision" value="revise" /> 记录提示需要修改猜想</label>
+        <label><input type="radio" name="hypothesisDecision" value="shelve" /> 信息还不够，暂时不判断</label>
+        <textarea id="hypothesisRevision" rows="2" maxlength="280" placeholder="选择“修改猜想”时，可以写下新的暂时说法。"></textarea>
+      </fieldset>
+      <fieldset class="completion-choice" id="cycleNextStep">
+        <legend>接下来怎么做？</legend>
+        <label><input type="radio" name="cycleNextStep" value="end" /> 结束观察</label>
+        <label><input type="radio" name="cycleNextStep" value="extend" /> 再观察三个出现目标情境的日子</label>
+        <label><input type="radio" name="cycleNextStep" value="new" /> 开始一个新问题</label>
+      </fieldset>
+      <button class="primary-button" id="confirmCycleCompleteButton" type="button">保存这次理解更新</button>
+      <p class="confirm-status" id="cycleCompleteStatus" aria-live="polite"></p>
+      <section class="closing-feedback-card hidden" id="closingFeedbackCard" aria-live="polite">
+        <span id="closingFeedbackState">稍等，猫在看这七天留下的记录</span>
+        <h2 id="closingFeedbackTitle">猫的七日回信</h2>
+        <p id="closingFeedbackOpening"></p>
+        <strong>原来的判断</strong>
+        <p id="closingOriginalPrediction"></p>
+        <strong>实际观察</strong>
+        <ul id="closingFeedbackWins"></ul>
+        <strong>我更新了什么</strong>
+        <p id="closingFeedbackLearning"></p>
+        <strong>这次多理解的一点</strong>
+        <p id="closingFeedbackRecognition"></p>
+        <strong>下次先做什么</strong>
+        <p id="closingFeedbackNext"></p>
+        <small id="closingFeedbackNote"></small>
+        <div class="closing-feedback-actions">
+          <button class="secondary-button hidden" id="retryClosingFeedbackButton" type="button">重新生成回信</button>
+          <button class="primary-button" id="finishClosingFeedbackButton" type="button">收好这封回信</button>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog class="history-dialog" id="historyDialog">
+      <div class="history-head">
+        <div>
+          <span>只保存在当前浏览器</span>
+          <h2>观察记录</h2>
+        </div>
+        <button class="ghost-button" id="closeHistoryButton" type="button" aria-label="关闭观察记录">关闭</button>
+      </div>
+      <p>只有你明确选择“留给小猫”时，才会在当前浏览器保存确认后的事件摘要、问题地图、已问问题、实验和观察结果。不会保存逐字对话；可在下方逐条删除或全部清空。</p>
+      <div id="historyList"></div>
+      <button class="secondary-button" id="clearHistoryButton" type="button">清空问题地图、周期与打卡</button>
+    </dialog>
+
+    <dialog class="history-dialog" id="networkPrivacyDialog" aria-labelledby="networkPrivacyTitle">
+      <div class="history-head">
+        <div>
+          <span id="networkPrivacyEyebrow">联网与隐私</span>
+          <h2 id="networkPrivacyTitle">猫怎样使用 AI</h2>
+        </div>
+        <button class="ghost-button" id="closeNetworkPrivacyButton" type="button">关闭</button>
+      </div>
+      <p id="networkPrivacyDescription">当前这次回答会发送给模型，用于生成一张可以修改的问题地图。</p>
+      <ul id="networkPrivacyList">
+        <li>安全分流在当前浏览器完成。</li>
+        <li>不保存逐字原始对话。</li>
+        <li>只有你选择保存时，才会保留你确认后的结构化摘要、地图、实验和观察。</li>
+        <li>历史记录不会自动发送。</li>
+        <li>你可以在“观察记录”中删除已保存内容。</li>
+      </ul>
+      <button class="secondary-button" id="revokeNetworkConsentButton" type="button">撤回联网授权</button>
+      <p class="confirm-status" id="networkPrivacyStatus" aria-live="polite"></p>
+    </dialog>
+
+    <script src="./qualityRules.js"></script>
+    <script src="./assessmentEngine.js"></script>
+    <script src="./adaptive.js"></script>
+  </body>
+</html>

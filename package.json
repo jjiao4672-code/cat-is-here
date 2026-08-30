@@ -1,0 +1,12 @@
+{
+  "name": "cat-is-here",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test *.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

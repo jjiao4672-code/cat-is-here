@@ -1,0 +1,58 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated files
+node_modules/
+tmp/
+backup/
+*.log
+.impeccable/
+
+# Old visual iterations stay local; publish only files used by the app
+assets/*
+!assets/desk-coffee-accent.png
+!assets/desk-foreground-v7-4k.png
+!assets/desk-plant-accent.png
+!assets/desk-scene-v2-4k.webp
+!assets/desk-scene-v4-4k.webp
+!assets/desk-scene-v7-4k.webp
+!assets/desk-scene-web-v2-4k.webp
+!assets/desk-surface.png
+!assets/desk-table.png
+!assets/cat-is-here-logo-v1.png
+!assets/favicon.svg
+!assets/fonts/
+assets/fonts/*
+!assets/fonts/pingfang-xingchen.ttf
+!assets/landing-studio-v1-4k.jpg
+!assets/map-scene-cat-stickers-v1.png
+!assets/notebook-alpha-v1.png
+!assets/tabby-therapist.png
+
+# Keep only screenshots referenced by published documentation
+artifacts/*
+!artifacts/landing-final-en-desktop.png
+!artifacts/cycle-dashboard-simplified.png
+!artifacts/checkin-no-event.png
+!artifacts/checkin-event.png
+!artifacts/problem-map-restored.png
+!artifacts/experiment-page-no-green.png
+
+# OS and editor metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Local research and handoff material
+*.pdf
+*_HANDOFF.md
+AI_WEB_DESIGN_BRIEF.md
+CONTEXT.md
+NETWORK_PROBLEM_MAP_IMPLEMENTATION_REPORT.md
+PRODUCT_MODIFICATION_REPORT.md
+WEB_CONTENT_ADJUSTMENT_REPORT.md
+art-style-samples/
