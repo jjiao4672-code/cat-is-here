@@ -747,11 +747,20 @@ let interviewSummary = "";
   function applyCompetitionCopy(view) {
     if (!COMPETITION_EN) return;
     const set = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
+    const aria = (selector, value) => { const node = $(selector); if (node) node.setAttribute("aria-label", value); };
     const responseStatus = mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No example shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`;
     document.documentElement.lang = "en";
     document.title = "Cat Is Here | Competition Demo";
     $(".landing-art").alt = "Cat waits behind a desk among sunlit plants";
     $(".hero-row").setAttribute("aria-label", "Reflect with Cat");
+    [
+      [".status-strip", "Product status"], ["#notebookHotspot", "Open the 7-Day Check"], ["#mapHotspot", "Open the Problem Map"],
+      [".scene-interactions", "Things on the desk"], ["[data-desk-effect='coffee']", "Tap the coffee cup"], ["[data-desk-effect='paws']", "Tap the cat paws"],
+      ["[data-desk-effect='flowers']", "Tap the flowers"], ["#closeResultButton", "Close the Problem Map"], ["#answerCoreCard", "Current reflection structure"],
+      [".coach-prompts", "Quick questions"], ["#journalDialog", "7-Day Check journal"], ["#closeJournalButton", "Close the 7-Day Check journal"],
+      ["#journalSevenDayTrack", "Seven-day check-in status"], ["#journalMiniTrends", "Seven-day distress and daily-life impact"], ["#journalCoverNextButton", "Open daily check-ins"],
+      ["#journalPrevButton", "Previous page"], ["#journalNextButton", "Next page"], [".checkin-context", "What you are checking this time"], ["#closeHistoryButton", "Close check-in history"]
+    ].forEach(([selector, label]) => aria(selector, label));
     $(".desk-illustration img").alt = "Cat beside a reflection notebook";
     $(".desk-illustration figcaption").textContent = "Cat does not decide for you. Cat stays with what actually happened.";
     set("#app-title", "Cat Is Here");
