@@ -172,6 +172,10 @@ function fallbackNextQuestion(language, knownFields = []) {
 function validateSynthesis(data, allowedSourceRefs = [], language = "zh", sourceByField = {}, sourceValuesByField = {}) {
   const requiredMapKeys = ["fact", "meaning", "feeling", "move", "result", "hypothesis", "unknown"];
   const mapKeys = [...requiredMapKeys];
+  const english = language === "en";
+  const defaults = english
+    ? { title: "Try one small step", prediction: "Observe without assuming the outcome.", outcome: "Use the shortest useful window and record the new fact and what you did.", continue: "Continue while the step stays controllable, safe, and informative.", fallback: "Stop or shrink the step if risk rises or a boundary feels unsafe.", meaning: "A matching result keeps the guess tentative; a different or unclear result updates it.", action: "First step: next time, separate the observed fact from the first prediction." }
+    : { title: "先试一个最小动作", prediction: "这次只观察，不预设结果。", outcome: "使用能获得有效反馈的最短时间，记录新事实和自己实际做了什么。", continue: "动作由用户控制、没有增加风险，而且能带来新信息时继续。", fallback: "风险升高、边界不安全或超出承受范围时停止并缩小动作。", meaning: "结果一致则暂时保留猜测；不同则修正；不清楚也有效。", action: "第一步：下次发生时，先记录事实和脑中第一个预测。" };
   if (!data?.map) throw new Error("问题地图格式不完整");
   const missingValue = (key) => language === "en" ? (key === "unknown" ? "Not yet known" : "Not asked yet") : (key === "unknown" ? "还不知道" : "还没说到");
   const cleanedMap = Object.fromEntries(requiredMapKeys.map((key) => [key, cleanVisible(typeof data.map[key] === "string" ? data.map[key] : missingValue(key), `地图字段 ${key}`)]));
@@ -179,17 +183,19 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   const formatExperiment = (item, index) => {
     const action = String(item?.action || item?.description || "").slice(0, 320);
     if (/秘密试探|暗中测试|操纵|故意冷落|逼迫对方|secretly test|manipulat/i.test(action)) throw new Error("实验必须是用户可控制的行动，不能秘密试探或操纵他人");
-    return { id: String(item?.id || `experiment_${index + 1}`).slice(0, 32), title: String(item?.title || `实验 ${index + 1}`).slice(0, 80), prediction: String(item?.prediction || "这次只观察，不预设结果。").slice(0, 280), action, observableOutcome: String(item?.observableOutcome || "使用能获得有效反馈的最短时间，记录新事实和自己实际做了什么。").slice(0, 320), continueCondition: String(item?.continueCondition || "动作由用户控制、没有增加风险，而且能带来新信息时继续。").slice(0, 280), fallback: String(item?.fallback || "风险升高、边界不安全或超出承受范围时停止并缩小动作。").slice(0, 280), resultMeaning: String(item?.resultMeaning || "结果一致则暂时保留猜测；不同则修正；不清楚也有效。").slice(0, 320), needsPattern: Boolean(item?.needsPattern), description: action };
+    return { id: String(item?.id || `experiment_${index + 1}`).slice(0, 32), title: String(item?.title || defaults.title).slice(0, 80), prediction: String(item?.prediction || defaults.prediction).slice(0, 280), action, observableOutcome: String(item?.observableOutcome || defaults.outcome).slice(0, 320), continueCondition: String(item?.continueCondition || defaults.continue).slice(0, 280), fallback: String(item?.fallback || defaults.fallback).slice(0, 280), resultMeaning: String(item?.resultMeaning || defaults.meaning).slice(0, 320), needsPattern: Boolean(item?.needsPattern), description: action };
   };
   const experiments = Array.isArray(data.experiments) ? data.experiments.slice(0, 1).map(formatExperiment) : [];
-  if (!experiments.length) experiments.push(formatExperiment({ id: "observe", title: "先试一个最小动作", action: data.experiment || "第一步：下次发生时，先记录事实和脑中第一个预测。" }, 0));
+  if (!experiments.length) experiments.push(formatExperiment({ id: "observe", title: defaults.title, action: data.experiment || defaults.action }, 0));
   if (!missingMapValue.test(cleanedMap.hypothesis) && !/可能|也许|待验证|尚不(?:能|确定)|possibly|may|might|to test/i.test(cleanedMap.hypothesis)) throw new Error("猜测必须明确标为待验证");
   if (/童年|原生家庭|依恋(?:型|类型)|人格|疾病|病症|诊断|潜意识/.test(cleanedMap.hypothesis)) throw new Error("猜测只能描述本次事件的即时机制");
   ["fact", "meaning", "feeling", "move", "result"].forEach((key) => {
     if (sourceValuesByField[key]) cleanedMap[key] = cleanVisible(sourceValuesByField[key], `用户确认的地图字段 ${key}`);
   });
   if (["fact", "meaning", "feeling", "move"].every((key) => sourceValuesByField[key] && !missingMapValue.test(sourceValuesByField[key]))) {
-    cleanedMap.hypothesis = `可能是：发生“${cleanedMap.fact}”时，你把它理解为“${cleanedMap.meaning}”，感到“${cleanedMap.feeling}”，接着“${cleanedMap.move}”；这仍需验证。`.slice(0, 220);
+    cleanedMap.hypothesis = (english
+      ? `Possibly, when “${cleanedMap.fact}” happened, you interpreted it as “${cleanedMap.meaning}”, felt “${cleanedMap.feeling}”, and then “${cleanedMap.move}”. This still needs testing.`
+      : `可能是：发生“${cleanedMap.fact}”时，你把它理解为“${cleanedMap.meaning}”，感到“${cleanedMap.feeling}”，接着“${cleanedMap.move}”；这仍需验证。`).slice(0, 220);
   }
   const brief = (value, max) => String(value).slice(0, max);
   const insight = language === "en"
