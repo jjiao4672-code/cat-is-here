@@ -103,7 +103,7 @@ async function askValidated(prompt, validator) {
     try { return validator(candidate); } catch (error) {
       lastError = error;
       if (attempt === 2) break;
-      const repair = `上一个 JSON 没通过产品质量门禁：${error.message}。保持字段和事实不变，只重写表达。使用短句和普通话；首层不放术语、诊断或鸡汤。再次只返回完整 JSON。`;
+      const repair = `上一个 JSON 没通过产品质量门禁：${error.message}。保持字段和事实不变，只重写表达。严格保持原提示指定的输出语言；使用短句和日常表达。首层不放术语、诊断或鸡汤。再次只返回完整 JSON。`;
       candidate = await askModel([{ role: "user", content: prompt }, { role: "assistant", content: JSON.stringify(candidate) }, { role: "user", content: repair }]);
     }
   }

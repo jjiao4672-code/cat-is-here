@@ -127,6 +127,7 @@ test("competition uses Live AI first and keeps persistence disabled", () => {
   assert.match(script, /This walkthrough starts with a labeled, editable synthetic example and uses Live AI by default/);
   assert.match(script, /no verbatim conversation or competition walkthrough data is saved/);
   assert.match(server, /English competition output contains Chinese text/);
+  assert.match(server, /严格保持原提示指定的输出语言/);
   assert.match(server, /Possibly:/);
   assert.match(server, /Try one small step/);
 });
