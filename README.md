@@ -2,7 +2,9 @@
 
 Cat Is Here is a guided reflection product for everyday distress. It helps a person separate one event from the meaning they gave it, notice what they did next, and test one editable guess through a small action. It does not diagnose or provide treatment.
 
-Live competition URL: pending deployment.
+Live competition URL: https://cat-is-here.onrender.com/?demo=competition&lang=en
+
+Source code: https://github.com/jjiao4672-code/cat-is-here
 
 ## Competition demo
 
@@ -103,7 +105,7 @@ Hack for Humanity requires functioning source code in a GitHub repository and a 
 - One active observation topic at a time.
 - Regex redaction cannot guarantee removal of every identifier.
 - Provider terms, retention, regional law, crisis resources, and independent security review must be resolved before public use with sensitive personal data.
-- The public deployment and final model-quality sample are not complete yet.
+- The public deployment is live; a larger multi-run model-quality sample is still needed.
 
 Development in this workspace began on August 10, 2026, after the competition opened on August 7. See [RESPONSIBLE_AI.md](./RESPONSIBLE_AI.md), [ATTRIBUTIONS.md](./ATTRIBUTIONS.md), and [DEVPOST_SUBMISSION.md](./DEVPOST_SUBMISSION.md).
 

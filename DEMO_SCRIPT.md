@@ -1,6 +1,6 @@
 # Cat Is Here: four-minute demo draft
 
-Open `http://127.0.0.1:8877/?demo=competition&lang=en` with a valid server-side model configuration. Record a successful run in advance. Keep a short, separate failure clip as backup.
+Open `https://cat-is-here.onrender.com/?demo=competition&lang=en`. Record a successful run in advance. Keep a short, separate failure clip as backup.
 
 ## 0:00 to 0:25
 

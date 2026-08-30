@@ -10,9 +10,9 @@ Turn one anxious guess into a small action that can bring back real information.
 
 ## Try it out
 
-Public URL: add after deployment.
+Public URL: https://cat-is-here.onrender.com/?demo=competition&lang=en
 
-Source code: add the GitHub URL after the repository is published.
+Source code: https://github.com/jjiao4672-code/cat-is-here
 
 ## Inspiration
 
