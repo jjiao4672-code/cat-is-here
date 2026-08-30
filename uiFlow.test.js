@@ -509,6 +509,7 @@ test("English competition copy stays conversational", () => {
   assert.match(script, /A GUESS YOU CAN CHANGE/);
   assert.match(script, /setAttribute\("aria-label", "Example input"\)/);
   assert.match(server, /Cat read what you wrote\. In your words:/);
+  assert.match(server, /does \(\?:this\|that\)/);
   assert.match(server, /Cat has what happened[\s\S]*What did it seem to mean to you/);
   assert.doesNotMatch(server, /reflection: copy\[0\], question: copy\[0\]/);
   assert.doesNotMatch(`${script}\n${server}`, /Make the prediction observable|add a real fact|Organize my judgment|This reflection ends here|What happened now and later|Choose the closest observable event|EDITABLE HYPOTHESIS/);

@@ -208,7 +208,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   if (reportVoice.test(insight)) qualityIssues.push("report_voice");
   if (figurativeVoice.test(insight)) qualityIssues.push("figurative_voice");
   if (language === "en" ? !/\bCat\b/.test(insight) : !insight.includes("猫")) qualityIssues.push("missing_cat_voice");
-  if (language === "en" ? !/you (?:decide|check|judge)|does this (?:fit|match)|see if/i.test(insight) : !/你看看|你来判断|由你/.test(insight)) qualityIssues.push("missing_user_judgment");
+  if (language === "en" ? !/you (?:decide|check|judge)|does (?:this|that) (?:fit|match)|see if/i.test(insight) : !/你看看|你来判断|由你/.test(insight)) qualityIssues.push("missing_user_judgment");
   if (qualityIssues.length) throw new Error(`首层表达不合格：${qualityIssues.join(",")}`);
   const allowed = new Set(allowedSourceRefs);
   const mapSources = Object.fromEntries(mapKeys.map((key) => {
@@ -360,7 +360,7 @@ ${catLiteraryStyle}
         if (answer.unknown) sourceValuesByField[answer.targetField] = body.language === "en" ? "Not yet known" : "还不知道";
         else if (String(answer.answer || "").trim()) sourceValuesByField[answer.targetField] = String(answer.answer).trim();
       });
-      const outputLanguage = body.language === "en" ? `All user-visible JSON values must be in plain English. Use the proper name “Cat”, never “the Cat”. insight must begin with “Cat read what you wrote.” and then “Cat has a guess; see if it fits.” Use “possibly”, “may”, “might”, or “to test” for uncertainty. Use “Not yet confirmed” instead of Chinese fallback text. Keep every field editable and avoid Chinese characters.` : "全部用户可见字段使用中文。";
+      const outputLanguage = body.language === "en" ? `All user-visible JSON values must be in plain English. Use the proper name “Cat”, never “the Cat”. insight must begin with “Cat read what you wrote.” and end by asking “Does that fit?” Use “possibly”, “may”, “might”, or “to test” for uncertainty. Use “Not yet confirmed” instead of Chinese fallback text. Keep every field editable and avoid Chinese characters.` : "全部用户可见字段使用中文。";
       const prompt = `${catRules}
 ${learningRules}
 ${catLiteraryStyle}
