@@ -46,7 +46,7 @@
     if (!text) issues.push("empty_summary");
     if (isChinese && text.length > 180) issues.push("summary_too_long");
     if (!isChinese && text.split(/\s+/).filter(Boolean).length > 90) issues.push("summary_too_long");
-    const sentences = text.split(/[。！？!?]+/).map((item) => item.trim()).filter(Boolean);
+    const sentences = text.split(/[。！？.!?]+/).map((item) => item.trim()).filter(Boolean);
     if (isChinese && sentences.some((item) => item.length > 55)) issues.push("sentence_too_long");
     if (!isChinese && sentences.some((item) => item.split(/\s+/).length > 32)) issues.push("sentence_too_long");
     if (jargonPatterns.some((pattern) => pattern.test(text))) issues.push("jargon_in_summary");

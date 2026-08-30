@@ -29,6 +29,13 @@ test("accepts short plain-language Chinese and English summaries", () => {
   }
 });
 
+test("English sentence checks split ordinary full stops", () => {
+  const shortSentences = "Cat read what you wrote. The event is clear. The meaning stays editable. You decide if this fits.";
+  const oneLongSentence = "Cat read a single sentence containing more than thirty two separate words because this check must still reject genuinely long English sentences that make the interface harder to read for a tired person using the reflection flow today";
+  assert.deepEqual(rules.summaryIssues(shortSentences), []);
+  assert.ok(rules.summaryIssues(oneLongSentence).includes("sentence_too_long"));
+});
+
 test("redacts direct identifiers without removing observation dates", () => {
   const value = rules.redactDirectIdentifiers("Email me at person@example.com or +1 (415) 555-1212. 手机 13812345678，身份证 11010519491231002X，记录日期 2026-08-25。");
   assert.doesNotMatch(value, /person@example\.com|415|13812345678|11010519491231002X/);

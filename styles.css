@@ -119,6 +119,8 @@ textarea,input{border-color:#ddcdb3;background:#fffaf0}
   .question-panel>.actions button::before,.followup-panel>.actions button::before{font-size:32px;line-height:38px}
 }
 
+#deepDiveLabel{color:#79402f}
+
 /* Independent map scene, desk state sheet, and paged observation journal. */
 .desk-state-panel{position:relative;z-index:1}
 .desk-state-panel.hidden,.journal-cover.hidden,.journal-spread.hidden{display:none}

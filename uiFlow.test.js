@@ -149,7 +149,8 @@ test("competition fallback is explicit and usable after live retries", () => {
   const requestStart = script.indexOf("async function requestAiMap");
   const catchStart = script.indexOf("} catch (error) {", requestStart);
   const failureBranch = script.slice(catchStart, script.indexOf("renderResult();", catchStart));
-  assert.match(failureBranch, /competitionSynthesis/);
+  assert.match(failureBranch, /mapRequestState = "fallback-offered"/);
+  assert.doesNotMatch(failureBranch, /competitionSynthesis|mapRequestState = "synthetic"/);
 });
 
 test("competition presets show two distinct mechanisms without promising an ideal outcome", () => {

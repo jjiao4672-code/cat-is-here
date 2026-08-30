@@ -486,16 +486,9 @@ let interviewSummary = "";
     } catch (error) {
       if (attempt < 2 && /校验|JSON|格式|缺少有效来源|invalid|validation/i.test(String(error.message))) return requestAiMap({ attempt: attempt + 1 });
       mapRequestError = classifyApiError(error.message);
-      if (COMPETITION_MODE) {
-        // Keep the competition flow usable: show a clearly labelled local example after live retries fail.
-        deepSynthesis = COMPETITION_EN ? competitionSynthesis(competitionCase) : competitionSynthesisZh(competitionCase);
-        deepDiveEnhanced = false;
-        mapRequestState = "synthetic";
-      } else {
-        deepSynthesis = null;
-        deepDiveEnhanced = false;
-        mapRequestState = "fallback-offered";
-      }
+      deepSynthesis = null;
+      deepDiveEnhanced = false;
+      mapRequestState = "fallback-offered";
     }
     renderResult();
   }
