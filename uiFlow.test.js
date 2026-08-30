@@ -508,6 +508,7 @@ test("English competition copy stays conversational", () => {
   assert.match(script, /Live AI · Example input · Nothing saved/);
   assert.match(script, /A GUESS YOU CAN CHANGE/);
   assert.match(script, /setAttribute\("aria-label", "Example input"\)/);
+  assert.match(html, /id="competitionExamples" role="group"/);
   assert.match(server, /Cat read what you wrote\. In your words:/);
   assert.match(server, /does \(\?:this\|that\)/);
   assert.match(server, /Cat has what happened[\s\S]*What did it seem to mean to you/);
