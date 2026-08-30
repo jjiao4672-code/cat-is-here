@@ -161,12 +161,12 @@ function fallbackNextQuestion(language, knownFields = []) {
   const en = language === "en";
   const field = ["meaning", "feeling", "move", "result"].find((item) => !knownFields.includes(item)) || "meaning";
   const copy = {
-    meaning: en ? ["Cat has the event. What did it seem to mean to you?", "The situation may have changed", "I needed more information"] : ["猫先记下了这件事。当时你觉得它说明了什么？", "情况可能发生了变化", "我当时需要更多信息"],
-    feeling: en ? ["Cat has your interpretation. What feeling came with it?", "Anxious or tense", "Sad or discouraged"] : ["猫记下了你的想法。这样想时，你有什么感受？", "焦虑或紧张", "失落或泄气"],
-    move: en ? ["What did you do or stop doing after that thought?", "I took one concrete action", "I did not take an action"] : ["有了这个想法后，你做了什么，或者停下了什么？", "我做了一个具体动作", "我没有采取行动"],
-    result: en ? ["What changed right away, and what happened later?", "Something changed over time", "There was no clear change"] : ["这样做当下带来了什么，后来又怎样？", "前后出现了一些变化", "没有明显变化"]
+    meaning: en ? ["Cat has what happened.", "What did it seem to mean to you?", "The situation may have changed", "I needed more information"] : ["猫先记下了这件事。", "当时你觉得它说明了什么？", "情况可能发生了变化", "我当时需要更多信息"],
+    feeling: en ? ["Cat has the meaning you gave it.", "What feeling came with that?", "Anxious or tense", "Sad or discouraged"] : ["猫记下了你的想法。", "这样想时，你有什么感受？", "焦虑或紧张", "失落或泄气"],
+    move: en ? ["Cat has your thought and feeling.", "What did you do or stop doing next?", "I took one concrete action", "I did not take an action"] : ["猫记下了你的想法和感受。", "接下来你做了什么，或者停下了什么？", "我做了一个具体动作", "我没有采取行动"],
+    result: en ? ["Cat has what you did next.", "What changed right away, and what happened later?", "Something changed over time", "There was no clear change"] : ["猫记下了你接下来的行动。", "这样做当下带来了什么，后来又怎样？", "前后出现了一些变化", "没有明显变化"]
   }[field];
-  return { reflection: copy[0], question: copy[0], targetField: field, mode: field === "feeling" ? "feeling" : field === "move" ? "action" : field === "result" ? "result" : "question", readyForMap: false, options: [{ id: "fallback_a", label: copy[1] }, { id: "fallback_b", label: copy[2] }] };
+  return { reflection: copy[0], question: copy[1], targetField: field, mode: field === "feeling" ? "feeling" : field === "move" ? "action" : field === "result" ? "result" : "question", readyForMap: false, options: [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }] };
 }
 
 function validateSynthesis(data, allowedSourceRefs = [], language = "zh", sourceByField = {}, sourceValuesByField = {}) {
@@ -174,7 +174,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   const mapKeys = [...requiredMapKeys];
   const english = language === "en";
   const defaults = english
-    ? { title: "Try one small step", prediction: "Observe without assuming the outcome.", outcome: "Use the shortest useful window and record the new fact and what you did.", continue: "Continue while the step stays controllable, safe, and informative.", fallback: "Stop or shrink the step if risk rises or a boundary feels unsafe.", meaning: "A matching result keeps the guess tentative; a different or unclear result updates it.", action: "First step: next time, separate the observed fact from the first prediction." }
+    ? { title: "Try one small step", prediction: "Don’t decide the outcome in advance.", outcome: "Give the step enough time to produce a result. Write down what happened and what you did.", continue: "Continue while the step stays safe, within your control, and likely to teach you something.", fallback: "Stop or shrink the step if risk rises or a boundary feels unsafe.", meaning: "If the result matches your worry, keep the guess for now. If it differs, update it. No clear result is still useful.", action: "First step: next time, write down what happened before deciding what it means." }
     : { title: "先试一个最小动作", prediction: "这次只观察，不预设结果。", outcome: "使用能获得有效反馈的最短时间，记录新事实和自己实际做了什么。", continue: "动作由用户控制、没有增加风险，而且能带来新信息时继续。", fallback: "风险升高、边界不安全或超出承受范围时停止并缩小动作。", meaning: "结果一致则暂时保留猜测；不同则修正；不清楚也有效。", action: "第一步：下次发生时，先记录事实和脑中第一个预测。" };
   if (!data?.map) throw new Error("问题地图格式不完整");
   const missingValue = (key) => language === "en" ? (key === "unknown" ? "Not yet known" : "Not asked yet") : (key === "unknown" ? "还不知道" : "还没说到");
@@ -202,7 +202,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
       : `可能是：发生“${cleanedMap.fact}”时，你把它理解为“${cleanedMap.meaning}”，感到“${cleanedMap.feeling}”，接着“${cleanedMap.move}”；这仍需验证。`.slice(0, 220);
   }
   const insight = language === "en"
-    ? `Cat read what you wrote. Event: ${brief(cleanedMap.fact, 60)}. Interpretation: ${brief(cleanedMap.meaning, 65)}. Feeling: ${brief(cleanedMap.feeling, 40)}. Action: ${brief(cleanedMap.move, 50)}. Result: ${brief(cleanedMap.result, 60)}. You decide if this fits.`
+    ? `Cat read what you wrote. In your words: ${brief(cleanedMap.fact, 60)}. ${brief(cleanedMap.meaning, 65)}. ${brief(cleanedMap.feeling, 40)}. ${brief(cleanedMap.move, 50)}. ${brief(cleanedMap.result, 60)}. Does that fit?`
     : `猫看完了。事情是：${brief(cleanedMap.fact, 24)}。你的解释是：${brief(cleanedMap.meaning, 22)}。感受是：${brief(cleanedMap.feeling, 14)}。接着做了：${brief(cleanedMap.move, 22)}。结果是：${brief(cleanedMap.result, 28)}。你看看像不像。`;
   const qualityIssues = [...summaryIssues(insight), ...outputIssues(data), ...metaphorIssues(insight)];
   if (reportVoice.test(insight)) qualityIssues.push("report_voice");

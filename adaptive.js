@@ -133,10 +133,10 @@ let interviewSummary = "";
     const value = {
       id: experiment.id || "observe_only",
       title: experiment.title || (en ? "Observe one thing" : "只观察并记录"),
-      prediction: String(experiment.prediction || (en ? "Observe this once without assuming the outcome." : "这次只观察，不预设结果。")).trim(),
+      prediction: String(experiment.prediction || (en ? "Don’t decide the outcome in advance." : "这次只观察，不预设结果。")).trim(),
       action,
       observableOutcome: String(experiment.observableOutcome || (action ? (en ? "Record whether a new fact appears, what I did, and what still remains unknown." : "记录行动后是否出现新事实，以及困扰是持续上升、回落还是不变。") : "")).trim(),
-      continueCondition: String(experiment.continueCondition || (en ? "Continue while the action remains controllable, safe, and informative." : "动作由我控制、没有增加风险，而且能带来新的现实信息时继续。")).trim(),
+      continueCondition: String(experiment.continueCondition || (en ? "Continue while the step stays safe, within my control, and likely to teach me something." : "动作由我控制、没有增加风险，而且能带来新的现实信息时继续。")).trim(),
       fallback: String(experiment.fallback || (en ? "Stop if risk rises or a boundary is unsafe. Otherwise, make the action smaller." : "如果风险升高、边界不安全或动作超出承受范围，就停止并缩小动作。")).trim(),
       resultMeaning: String(experiment.resultMeaning || (en ? "A matching result may keep the guess for now. A different result updates it. Unclear remains unknown." : "结果一致：原猜测暂时保留；结果不同：修正原猜测；仍不清楚：先保留不知道。")).trim(),
       timing: ["now", "later", "not_now"].includes(experiment.timing) ? experiment.timing : "now",
@@ -438,7 +438,7 @@ let interviewSummary = "";
   }
 
   function renderQuestionSelection(question) {
-    $("#selectedCount").textContent = COMPETITION_EN ? (selected.length ? `${selected.length} selected` : "Choose the closest observable event") : selected.length ? `已选择 ${selected.length} 项` : question.max > 1 ? `最多选 ${question.max} 项` : "选最接近的一项";
+    $("#selectedCount").textContent = COMPETITION_EN ? (selected.length ? `${selected.length} selected` : "Choose the closest thing that happened") : selected.length ? `已选择 ${selected.length} 项` : question.max > 1 ? `最多选 ${question.max} 项` : "选最接近的一项";
     [...$("#optionsGrid").children].forEach((button, index) => button.classList.toggle("selected", selected.includes(question.options[index].id)));
   }
 
@@ -646,34 +646,34 @@ let interviewSummary = "";
 
   function competitionSynthesis(caseId = competitionCase) {
     if (caseId === "job_search") return {
-      insight: "Cat read what you wrote. Cat has a guess; see if it fits. No replies are observable. ‘I am not capable enough’ is a self-judgment, not a known reason for the silence.",
+      insight: "Cat read what you wrote. No replies arrived. ‘I am not capable enough’ is one way to read the silence, not a known reason for it. Does that fit?",
       map: {
         fact: "Many applications were sent, and no replies arrived.",
         meaning: "My ability is not good enough.",
         feeling: "Anxious, ashamed, and discouraged.",
         move: "Stop sending applications.",
         result: "Right away: brief relief from possible rejection. Later: more anxiety and no new information.",
-        hypothesis: "Possibly, an external result becomes a judgment about personal ability, which makes stopping feel safer for a moment; this still needs testing.",
+        hypothesis: "Possibly, the silence started to feel like a verdict on your ability, so stopping brought brief relief. That is still a guess.",
         unknown: "Why employers did not reply, what each role required, and which application change might matter remain unknown."
       },
       alternatives: ["Hiring timing, role fit, or application details may affect replies.", "Silence does not establish a complete judgment of ability."],
       concepts: [],
-      experiments: [{ id: "one_application", title: "Send one bounded application", prediction: "If I apply again, another silence will prove I am not capable enough.", action: "First step: choose one suitable role and prepare one specific application change that I control.", observableOutcome: "Observe through the stated response window; record the action completed, any reply, and what still cannot be inferred.", continueCondition: "Continue only while the step stays controllable, low-cost, and informative.", fallback: "Stop if the role is unsuitable or the step becomes too large; otherwise make it smaller.", resultMeaning: "A reply adds information about fit; no reply still cannot prove personal worth; not enough information remains valid.", needsPattern: false }]
+      experiments: [{ id: "one_application", title: "Send one focused application", prediction: "If I apply again, another silence will prove I am not capable enough.", action: "First step: choose one suitable role and make one specific change to the application.", observableOutcome: "Wait until the response window in the posting ends. Record whether you applied, any reply, and what you still do not know.", continueCondition: "Keep going while each application stays manageable and gives you useful information.", fallback: "Stop if the role is unsuitable or the step becomes too large; otherwise make it smaller.", resultMeaning: "A reply tells you more about fit. No reply still says nothing certain about your worth. Not knowing yet is allowed.", needsPattern: false }]
     };
     return {
-      insight: "Cat read what you wrote. Cat has a guess; see if it fits. Contact has decreased. ‘Asking will end the relationship’ is an editable prediction, not a known outcome.",
+      insight: "Cat read what you wrote. Contact has decreased. ‘Asking will end the relationship’ is a fear about what may happen, not a known outcome. Does that fit?",
       map: {
         fact: "Contact has become less frequent lately.",
         meaning: "If I ask about the relationship, the answer may be that we should separate.",
         feeling: "Afraid of hearing a painful answer.",
         move: "Avoid the conversation and analyze the relationship alone.",
         result: "Right away: avoid the feared answer. Later: keep guessing without new relationship information.",
-        hypothesis: "Possibly, anticipating a bad outcome keeps the user from letting reality begin; this still needs testing.",
+        hypothesis: "Possibly, expecting the worst has made avoiding the conversation feel safer. That is still a guess.",
         unknown: "The other person's actual view and how the conversation would unfold remain unknown."
       },
       alternatives: ["Less contact can have several explanations.", "A conversation may be difficult without automatically ending the relationship."],
       concepts: [],
-      experiments: [{ id: "conversation_invite", title: "Prepare one clear invitation", prediction: "If I invite a direct conversation, the relationship will immediately end.", action: "First step: write one clear, non-accusing invitation to talk and choose when to send it; if it is safe and possible now, send it.", observableOutcome: "Observe until the proposed time; record whether the invitation was sent, the actual reply, and what remains unknown.", continueCondition: "Continue while the invitation stays respectful, controllable, and safe.", fallback: "Stop if there is a real safety or boundary risk; otherwise make the step smaller by drafting without sending.", resultMeaning: "An agreed time adds a fact without deciding the relationship; refusal adds different information; no reply still leaves the outcome unknown.", needsPattern: false }]
+      experiments: [{ id: "conversation_invite", title: "Prepare one clear invitation", prediction: "If I invite a direct conversation, the relationship will immediately end.", action: "First step: write a clear invitation to talk without blaming the other person, choose when to send it, and send it now if that feels safe.", observableOutcome: "Wait until the time you suggested. Record whether you sent it, the reply, and what you still do not know.", continueCondition: "Keep going while the invitation stays respectful, safe, and within your control.", fallback: "Stop if there is a real safety or boundary risk. Otherwise, draft the message and choose when to send it.", resultMeaning: "An agreed time gives you one fact without deciding the relationship. A refusal gives you different information. No reply leaves the outcome unknown.", needsPattern: false }]
     };
   }
 
@@ -736,7 +736,7 @@ let interviewSummary = "";
     });
     if (!COMPETITION_MODE) return;
     const status = COMPETITION_EN
-      ? mapRequestState === "synthetic" ? "Synthetic example · No saving" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No fallback shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Synthetic example input" : "Edited input"} · No saving`
+      ? mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No example shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`
       : mapRequestState === "synthetic" ? "合成示例 · 不保存" : mapRequestState === "fallback-offered" ? "实时 AI 暂不可用 · 尚未显示兜底" : mapRequestState === "loading" ? "实时 AI · 正在生成" : `实时 AI · ${competitionInputSynthetic ? "合成示例输入" : "已编辑输入"} · 不保存`;
     const navStatus = $("#demoNav span");
     const topStatus = $(".status-strip span");
@@ -747,7 +747,7 @@ let interviewSummary = "";
   function applyCompetitionCopy(view) {
     if (!COMPETITION_EN) return;
     const set = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
-    const responseStatus = mapRequestState === "synthetic" ? "Synthetic example · No saving" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No fallback shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Synthetic example input" : "Edited input"} · No saving`;
+    const responseStatus = mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No example shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`;
     document.documentElement.lang = "en";
     document.title = "Cat Is Here | Competition Demo";
     $(".landing-art").alt = "Cat waits behind a desk among sunlit plants";
@@ -780,13 +780,13 @@ let interviewSummary = "";
     if (view === "question") {
       set("#sceneLabel", "INPUT");
       set("#heroTitle", "Cat is here.\nWhat happened?");
-      set("#heroDescription", "Choose the closest option, or write one observable event.");
+      set("#heroDescription", "Choose the closest option, or describe one thing that happened.");
       set("#stepLabel", "ONE EVENT");
       set("#selectedCount", "Choose an option or write one sentence");
       set("#questionKicker", "INPUT · WHAT HAPPENED");
       set("#questionTitle", "Cat is here.\nWhat happened?");
-      set("#questionHint", "Choose the closest one, or write it directly.");
-      const optionLabels = ["A response or relationship changed", "Conflict, rejection, separation, or a boundary", "A major change or loss", "A task, deadline, or evaluation", "Money, housing, work, study, or care pressure", "Body, sleep, medicine, alcohol, or substance use changed", "A memory, message, or similar scene returned", "No single event stands out", "I cannot recall yet"];
+      set("#questionHint", "Choose the closest option, or write your own.");
+      const optionLabels = ["Something changed in a relationship or response", "A conflict, rejection, separation, or boundary issue", "A major change, loss, or transition", "A task, deadline, review, or evaluation", "Pressure from money, housing, work, study, or caregiving", "A change in my body, sleep, medication, drinking, or substance use", "A memory, message, or familiar situation came back", "No single event stands out", "I can’t recall yet"];
       [...$("#optionsGrid").children].forEach((button, index) => { button.classList.remove("hidden"); button.textContent = optionLabels[index] || button.textContent; });
       $("#freeNote").maxLength = 320;
       $("#freeNote").previousElementSibling.textContent = "Write what happened";
@@ -794,6 +794,7 @@ let interviewSummary = "";
       set("#privacyTitle", "Data note");
       set("#privacyDescription", "This response is sent to AI to generate the next question. It is not saved automatically.");
       set("#competitionExampleLabel", "Use an example if helpful:");
+      $("#competitionExamples").setAttribute("aria-label", "Example input");
       document.querySelector('[data-example-case="relationship"]').textContent = "Relationship";
       document.querySelector('[data-example-case="job_search"]').textContent = "Job search";
       set("#backButton span", "Back");
@@ -836,27 +837,27 @@ let interviewSummary = "";
         return;
       }
       if (!deepSynthesis) return;
-      set("#sceneLabel", "PROBLEM MAP · EDITABLE HYPOTHESIS");
+      set("#sceneLabel", "PROBLEM MAP · A GUESS YOU CAN CHANGE");
       set("#heroTitle", "Separate what happened from what it might mean.");
-      set("#heroDescription", "The map stays provisional until reality provides more evidence.");
+      set("#heroDescription", "You can change this map when you learn more.");
       set("#stepLabel", "PROBLEM MAP · 2 OF 4");
       set("#selectedCount", mapRequestState === "synthetic" ? "Synthetic example · fixed output" : "Live AI · editable output");
       set("#resultPanel .result-step", "2 OF 4 · PROBLEM MAP");
       const defaultSyntheticInput = openingNote === COMPETITION_CASES[competitionCase].en;
       const exampleTitle = competitionCase === "job_search" ? "No reply ≠ a verdict on ability" : "A feared ending is not the same as a known ending";
-      set("#resultTitle", mapRequestState === "synthetic" ? `Synthetic example · ${exampleTitle}` : defaultSyntheticInput ? exampleTitle : "One event, one editable hypothesis");
-      set("#resultSummary", mapRequestState === "synthetic" ? "This fixed output is the labeled example you selected. It appeared only after your choice and is not a response to edited personal input." : `This map came from Live AI. Observed clue: ${deepSynthesis.map.fact} The interpretation remains editable.`);
-      const coreLabels = ["What happened", "What I thought", "What I felt", "What I did or did not do", "What happened now and later", "Cat's guess, for me to judge", "Still unknown"];
+      set("#resultTitle", mapRequestState === "synthetic" ? `Synthetic example · ${exampleTitle}` : defaultSyntheticInput ? exampleTitle : "One event, one guess you can change");
+      set("#resultSummary", mapRequestState === "synthetic" ? "This fixed output is the labeled example you selected. It appeared only after your choice and is not a response to edited personal input." : `This map came from Live AI. What happened: ${deepSynthesis.map.fact} Change anything Cat misunderstood.`);
+      const coreLabels = ["What happened", "What I thought", "What I felt", "What I did or did not do", "What happened right away and later", "Cat's guess (you decide)", "Still unknown"];
       document.querySelectorAll("#answerCoreCard .result-grid span").forEach((node, index) => { node.textContent = coreLabels[index]; });
       set("#surfaceProblem", deepSynthesis.map.fact);
       set("#protectivePurpose", deepSynthesis.map.meaning);
       set("#feelingResult", deepSynthesis.map.feeling);
       set("#actionResult", deepSynthesis.map.move);
       set("#nextStep", deepSynthesis.map.result);
-      set("#adlerFrame", `${deepSynthesis.map.hypothesis} This can be edited or rejected.`);
+      set("#adlerFrame", `${deepSynthesis.map.hypothesis} Change it or reject it.`);
       set("#unknownResult", deepSynthesis.map.unknown);
       set(".evidence-disclosure > summary", "View and edit the full Problem Map");
-      set(".deep-result-head > div > span", "EDITABLE HYPOTHESIS");
+      set(".deep-result-head > div > span", "A GUESS YOU CAN CHANGE");
       set(".deep-result-head h3", "Problem Map");
       set(".local-chip", "You decide");
       set("#alternativesList h3", "Other explanations remain possible");
@@ -867,11 +868,11 @@ let interviewSummary = "";
       $(".coach-disclosure")?.classList.add("hidden");
       set("#resultPanel .disclaimer", "Cat Is Here supports self-reflection. It is not psychotherapy, medical diagnosis, or crisis intervention. If there is an immediate risk of self-harm, suicide, or violence, contact a trusted person and local emergency or crisis support now.");
       set("#resultPanel .confirm-card .result-step", "MAP CHECK");
-      set("#resultPanel .confirm-card h3", "Does Cat's ordering fit?");
+      set("#resultPanel .confirm-card h3", "Did Cat put this in the right order?");
       set("#resultPanel .confirm-card > p", "You can edit any step. Only confirmed parts move into an action.");
       const choices = ["Fits", "Partly", "Revise"];
       [...$(".confirm-actions").children].forEach((button, index) => { button.textContent = choices[index]; });
-      set("#confirmStatus", "Keep this hypothesis for now, then test it against observations.");
+      set("#confirmStatus", "Keep this guess for now. See what happens next.");
       set("#toExperimentButton", "Think of one small action");
       set("#finishAtMapButton", "Stop here for today");
       set("#applyMapCorrectionButton", "Change the affected parts");
@@ -885,7 +886,7 @@ let interviewSummary = "";
     }
     if (view === "experiment") {
       set("#sceneLabel", "EXPERIMENT · CHANGE ONE THING");
-      set("#heroTitle", "Make the prediction observable.");
+      set("#heroTitle", "Turn the worry into something you can check.");
       set("#heroDescription", "Change one small action, then record what actually happens.");
       set("#stepLabel", "EXPERIMENT · 3 OF 4");
       set("#selectedCount", "Synthetic case · editable experiment");
@@ -902,7 +903,7 @@ let interviewSummary = "";
       $("#rememberForCat").closest("label").classList.add("hidden");
       $("#experimentFields > small").classList.add("hidden");
       set("#deskExperimentMapButton", "Back to Problem Map");
-      set("#startCycleButton", "Confirm this experiment card");
+      set("#startCycleButton", "Use this plan");
       return;
     }
     set("#sceneLabel", "7-DAY REALITY CHECK");
@@ -919,7 +920,7 @@ let interviewSummary = "";
     set("#startCheckinButton", "Check-in complete");
     set("#cycleDashboardStatus", competitionCase === "job_search" ? "This synthetic example separates hiring outcomes from a verdict on personal ability." : "The invitation was sent. The reply was only: ‘Saturday works.’ The relationship outcome remains unknown.");
     set("#competitionClosingLetter p", competitionCase === "job_search" ? "Original judgment: no replies meant I was not capable enough. Actual observation: you completed one application change that you controlled. The next hiring response remains unknown and does not decide personal worth." : "Original judgment: asking would make the relationship end. Actual observation: you sent a clear invitation, and the reply was only ‘Saturday works.’ You completed the controllable step by starting the conversation. Where the relationship will go remains unknown.");
-    set("#competitionClosingLetter small", "No ideal reply, immediate relief, or complete answer is required for this action to count.");
+    set("#competitionClosingLetter small", "The step still counts, even without the reply or relief you hoped for.");
     $("#cycleDashboard .cycle-more-actions")?.classList.add("hidden");
     $("#competitionClosingLetter")?.classList.remove("hidden");
   }
@@ -1064,8 +1065,8 @@ let interviewSummary = "";
     $("#followupKicker").textContent = COMPETITION_EN ? `LIVE AI · QUESTION ${Math.min(interviewRound + 1, 8)}` : `实时 AI · 第 ${Math.min(interviewRound + 1, 8)} 问`;
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
     $("#followupBackButton span").textContent = COMPETITION_EN ? "Back" : "上一题";
-    $("#followupReflection").textContent = COMPETITION_EN ? "Cat has kept your last answer here." : "猫先把你刚才说的放在这里。";
-    $("#followupTitle").textContent = COMPETITION_EN ? "One more detail may help" : "猫先停一下，看看刚才还缺哪一点";
+    $("#followupReflection").textContent = COMPETITION_EN ? "Here is what Cat heard so far." : "猫先把你刚才说的放在这里。";
+    $("#followupTitle").textContent = COMPETITION_EN ? "One more thing" : "猫先停一下，看看刚才还缺哪一点";
     $("#followupHint").textContent = COMPETITION_EN ? "Only this event and your confirmed answers are being sent." : "只发送这件事和你已经确认的回答。";
     $("#followupOptions").innerHTML = "";
     $("#followupNextButton").classList.add("hidden");
@@ -1129,7 +1130,7 @@ let interviewSummary = "";
     setMapScene(false); hideDeskViews(); $("#resultPanel").classList.add("hidden"); $("#questionPanel").classList.add("hidden"); $("#followupPanel").classList.remove("hidden", "interview-error");
     $("#followupKicker").textContent = COMPETITION_EN ? "YOUR OWN SUMMARY" : "先由你总结";
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
-    $("#followupReflection").textContent = COMPETITION_EN ? "Cat will only reflect your words after you write them." : "先由你写，猫只把你的话短短复述一遍。";
+    $("#followupReflection").textContent = COMPETITION_EN ? "Write it first. Cat will reflect it back." : "先由你写，猫只把你的话短短复述一遍。";
     $("#followupTitle").textContent = interviewQuestion.question;
     $("#followupHint").textContent = COMPETITION_EN ? "One or two sentences is enough. There is no right answer." : "写一两句就够了，没有标准答案。";
     $("#followupOptions").innerHTML = "";
@@ -1155,7 +1156,7 @@ let interviewSummary = "";
     interviewQuestion = { mode: "summary_confirm", question: COMPETITION_EN ? "Does Cat's short reflection sound right?" : "猫这样理解，对吗？", options: [{ id: "yes", label: COMPETITION_EN ? "Yes, that's it" : "听对了" }, { id: "edit", label: COMPETITION_EN ? "Not quite, let me edit" : "不完全对，我改一下" }] };
     $("#followupKicker").textContent = COMPETITION_EN ? "CHECK TOGETHER" : "一起核对";
     $("#followupReflection").textContent = COMPETITION_EN ? `You wrote: “${interviewSummary}”` : `你写的是：“${interviewSummary}”`;
-    $("#followupTitle").textContent = interviewQuestion.question; $("#followupHint").textContent = COMPETITION_EN ? "Cat will not add a conclusion you did not write." : "猫不会替你加上没有写出的结论。";
+    $("#followupTitle").textContent = interviewQuestion.question; $("#followupHint").textContent = COMPETITION_EN ? "Cat won’t add anything you didn’t say." : "猫不会替你加上没有写出的结论。";
     const options = $("#followupOptions"); options.innerHTML = ""; selectedFollow = null;
     interviewQuestion.options.forEach((option) => { const b = document.createElement("button"); b.type = "button"; b.className = "followup-option"; b.textContent = option.label; b.addEventListener("click", () => { selectedFollow = selectedFollow === option.id ? null : option.id; [...options.children].forEach((x) => x.classList.toggle("selected", x === b && selectedFollow === option.id)); $("#followupNextButton").disabled = !selectedFollow; }); options.append(b); });
     $("#followupNote").closest(".free-note-wrap").classList.add("hidden"); $("#followupNextButton span").textContent = COMPETITION_EN ? "Use this summary" : "用这段总结"; $("#followupNextButton").disabled = true;
@@ -1182,7 +1183,7 @@ let interviewSummary = "";
       options.append(button);
     });
     const freeWrap = $("#followupNote").closest(".free-note-wrap"); freeWrap.classList.remove("hidden");
-    freeWrap.querySelector("label").textContent = COMPETITION_EN ? "None quite fit. I will say it myself" : "都不太像，我自己说";
+    freeWrap.querySelector("label").textContent = COMPETITION_EN ? "None of these fit. I’ll write my own." : "都不太像，我自己说";
     const savedAnswer = String(question.savedAnswer || "");
     const savedOption = (question.options || []).find((option) => option.label === savedAnswer);
     selectedFollow = savedOption?.id || null;
@@ -1301,7 +1302,7 @@ let interviewSummary = "";
   }
 
   const mapLabels = { fact: "发生了什么", meaning: "我当时怎么想", feeling: "我有什么感受", move: "我做了什么 / 没做什么", result: "结果怎样（当下 / 后来）", hypothesis: "猫的猜想，等你判断", unknown: "还不知道" };
-  const competitionMapLabels = { fact: "What happened", meaning: "What I thought", feeling: "What I felt", move: "What I did or did not do", result: "What happened now and later", hypothesis: "Cat's guess, for me to judge", unknown: "Still unknown" };
+  const competitionMapLabels = { fact: "What happened", meaning: "What I thought", feeling: "What I felt", move: "What I did or did not do", result: "What happened right away and later", hypothesis: "Cat's guess (you decide)", unknown: "Still unknown" };
   const sourceLabels = { ENTRY_01: "发生的线索", UNDERSTANDING_01: "你的纠正", MEANING_01: "当时怎样解释", FEELING_01: "当时的感受", LOOP_01: "做了或没有做", PAYOFF_01: "短期结果", COST_01: "稍后结果", PATTERN_01: "是否重复", USER_CORRECTION: "你的修正" };
   const sourceText = (refs = []) => refs.map((ref) => {
     if (sourceLabels[ref]) return sourceLabels[ref];
@@ -1342,7 +1343,7 @@ let interviewSummary = "";
     experiments.forEach((experiment) => {
       const button = document.createElement("button"); button.type = "button"; button.className = `experiment-option ${selectedExperiment?.id === experiment.id ? "selected" : ""}`;
       const title = document.createElement("strong"); title.textContent = experiment.title;
-      const description = document.createElement("span"); description.textContent = COMPETITION_EN ? `${experiment.action} Outcome: ${experiment.observableOutcome}` : `${experiment.action} 判据：${experiment.observableOutcome}`;
+      const description = document.createElement("span"); description.textContent = COMPETITION_EN ? `${experiment.action} Look for: ${experiment.observableOutcome}` : `${experiment.action} 判据：${experiment.observableOutcome}`;
       button.append(title, description);
       button.addEventListener("click", () => {
         selectedExperimentOriginal = normalizeExperiment(experiment);
@@ -1363,7 +1364,7 @@ let interviewSummary = "";
     $("#startCycleButton").disabled = !experimentReady();
     const answeredQuestions = deepAnswers.filter((item) => item.id?.startsWith("ROUND_")).length;
     $("#continueDeepButton").disabled = answeredQuestions >= 4;
-    $("#continueDeepButton").textContent = COMPETITION_EN ? (answeredQuestions >= 4 ? "No more questions needed" : "Continue with one question") : (answeredQuestions >= 4 ? "这次先问到这里" : "继续问清楚");
+    $("#continueDeepButton").textContent = COMPETITION_EN ? (answeredQuestions >= 4 ? "That’s enough for now" : "Ask one more question") : (answeredQuestions >= 4 ? "这次先问到这里" : "继续问清楚");
     $("#mapCorrectionWrap").classList.toggle("hidden", !["有一点像", "不太像"].includes(feedback));
   }
 
@@ -1395,22 +1396,22 @@ let interviewSummary = "";
       $("#heroTitle").textContent = "Cat has a guess. You decide what to test.";
       $("#heroDescription").textContent = "Start with an action you control. Cat offers a draft only if you ask.";
       $("#stepLabel").textContent = "ACTION";
-      $("#selectedCount").textContent = "No saving";
+      $("#selectedCount").textContent = "Nothing saved";
       $("#experimentStep .result-step").textContent = "PROBLEM MAP CONFIRMED · ONE SMALL ACTION";
-      $("#experimentStep h2").textContent = "What is one small action that could add a real fact?";
-      $("#experimentStep > p").textContent = "You control the action. It can stop. The outcome does not need to be ideal.";
+      $("#experimentStep h2").textContent = "What small step could give you new information?";
+      $("#experimentStep > p").textContent = "Choose something you control and can stop at any time. The outcome does not need to be ideal.";
       $("#experimentProposal").previousElementSibling.textContent = "Write the first step you would try";
       $("#experimentProposal").placeholder = "One small action";
-      $("#experimentProposal").nextElementSibling.textContent = "You control it. You can stop. It should add one real fact.";
+      $("#experimentProposal").nextElementSibling.textContent = "Keep it within your control. You can stop at any time. It should give you new information.";
       $("#useOwnExperimentButton").textContent = "Check this action";
-      $("#showCatSuggestionButton").textContent = "I cannot think of one yet";
-      const labels = ["Original judgment", "I will do", "I will observe", "Continue when", "Stop when", "What different results would mean", "Can you do this step now?"];
+      $("#showCatSuggestionButton").textContent = "I can’t think of one yet";
+      const labels = ["Original worry", "What I’ll do", "What I’ll look for", "Keep going if", "Stop if", "What each result might mean", "Can I do this now?"];
       document.querySelectorAll("#experimentFields > label:not(.remember-choice)").forEach((node, index) => { node.textContent = labels[index] || node.textContent; });
-      $("#experimentTiming").options[0].textContent = "Do it now"; $("#experimentTiming").options[1].textContent = "Set a todo"; $("#experimentTiming").options[2].textContent = "Not now";
+      $("#experimentTiming").options[0].textContent = "Do it now"; $("#experimentTiming").options[1].textContent = "Schedule it"; $("#experimentTiming").options[2].textContent = "Not now";
       $("#needsPattern").closest("label").classList.add("hidden");
       $("#rememberForCat").closest("label").classList.add("hidden");
       $("#experimentFields > small").classList.add("hidden");
-      $("#startCycleButton").textContent = editingCycleExperiment ? "Save changes" : "Confirm this experiment card";
+      $("#startCycleButton").textContent = editingCycleExperiment ? "Save changes" : "Use this plan";
       $("#deskExperimentMapButton").textContent = "Back to Problem Map";
     }
     mapReturnView = "experiment";
@@ -1434,7 +1435,7 @@ let interviewSummary = "";
     if (selectedExperiment.needsPattern && !DEMO_MODE) return startCycle();
     if (selectedExperiment.timing === "later") {
       $("#todoSummary").textContent = `${selectedExperiment.when || missingText(true)}，在“${selectedExperiment.context || missingText(true)}”做：${selectedExperiment.action}`;
-      if (COMPETITION_EN) { $("#todoStep .result-step").textContent = "SET A TODO"; $("#todoStep h2").textContent = "Put the action in a specific time and place."; $("#todoSummary").textContent = `${selectedExperiment.when || missingText(true)}, in ${selectedExperiment.context || missingText(true)}: ${selectedExperiment.action}`; $("#copyTodoButton").textContent = "Copy todo"; $("#todoDoneButton").textContent = "Return with a result"; $("#todoEndButton").textContent = "Stop here today"; }
+      if (COMPETITION_EN) { $("#todoStep .result-step").textContent = "SCHEDULE IT"; $("#todoStep h2").textContent = "Choose when and where you’ll do it."; $("#todoSummary").textContent = `${selectedExperiment.when || missingText(true)}, in ${selectedExperiment.context || missingText(true)}: ${selectedExperiment.action}`; $("#copyTodoButton").textContent = "Copy task"; $("#todoDoneButton").textContent = "Come back after I try it"; $("#todoEndButton").textContent = "Stop here today"; }
       return showJourneyStep("todoStep");
     }
     if (selectedExperiment.timing === "not_now") { if (COMPETITION_EN) { $("#blockedStep .result-step").textContent = "NOT NOW"; $("#blockedStep h2").textContent = "This step may still be too large, or not right for now."; $("#blockedPart").previousElementSibling.textContent = "Where did you stop?"; $("#shrinkFromBlockButton").textContent = "Make the action smaller"; $("#blockedEndButton").textContent = "Stop here today"; } return showJourneyStep("blockedStep"); }
@@ -1444,7 +1445,7 @@ let interviewSummary = "";
       $("#actionWaitStatus").textContent = "DO IT NOW";
       $("#actionWaitTitle").textContent = "Cat is here while you do it.";
       $("#actionWaitCopy").textContent = "When you are done, tell Cat only what actually happened.";
-      $("#actionPreparation").previousElementSibling.textContent = "Temporary preparation, not saved by default";
+      $("#actionPreparation").previousElementSibling.textContent = "A quick note for this step (not saved)";
       $("#actionDoneButton").textContent = "I did it"; $("#actionNotDoneButton").textContent = "I did not do it"; $("#actionShrinkButton").textContent = "Make the action smaller";
     }
   }
@@ -1458,14 +1459,14 @@ let interviewSummary = "";
     showJourneyStep("observationStep");
     if (COMPETITION_EN) {
       $("#observationStep .result-step").textContent = "OBSERVE AND UPDATE";
-      $("#observationStep h2").textContent = "Keep the original worry beside what actually happened.";
+      $("#observationStep h2").textContent = "Compare your original worry with what actually happened.";
       $("#observationPrediction").previousElementSibling.textContent = "Original worry";
       $("#observationActual").previousElementSibling.textContent = "What actually happened";
       $(".update-choices legend").textContent = "How does the original worry look now?";
       const choices = ["This time matched what I feared", "Some parts matched and some did not", "This time did not match what I feared", "It is still too early to tell", "I want to write my own view"];
       document.querySelectorAll('.update-choices input[name="cognitiveUpdate"]').forEach((input, index) => { input.parentElement.lastChild.textContent = ` ${choices[index]}`; });
       $("#cognitiveUpdateCustomLabel").textContent = "My view now";
-      $("#finishObservationButton").textContent = "Organize my judgment";
+      $("#finishObservationButton").textContent = "Review what this changes";
     }
   }
 
@@ -1491,13 +1492,13 @@ let interviewSummary = "";
     showJourneyStep("journeyClosingStep");
     if (COMPETITION_EN) {
       $("#journeyClosingStep .result-step").textContent = "REFLECTION COMPLETE";
-      $("#journeyClosingStep h2").textContent = "This reflection ends here.";
+      $("#journeyClosingStep h2").textContent = "That’s enough for now.";
       const labels = ["Original judgment", "What actually happened", "My view now", "Still unknown", "Cat's summary"];
       document.querySelectorAll(".closing-summary-list dt").forEach((node, index) => { node.textContent = labels[index]; });
-      $(".save-choices legend").textContent = "What should remain?";
-      const saves = ["Leave it with Cat", "Do not save", "Return later with a result"];
+      $(".save-choices legend").textContent = "Save anything from this session?";
+      const saves = ["Save this with Cat", "Don’t save", "Come back after I try it"];
       document.querySelectorAll('.save-choices input[name="journeySave"]').forEach((input, index) => { input.parentElement.lastChild.textContent = ` ${saves[index]}`; });
-      $("#journeyClosingLine").textContent = "That is enough for this time. When something similar happens, Cat Is Here.";
+      $("#journeyClosingLine").textContent = "That’s enough for today. If this comes up again, Cat will be here.";
       $("#finishJourneyButton").textContent = pending ? "End this reflection" : "Finish";
     }
   }
@@ -2379,7 +2380,7 @@ let interviewSummary = "";
       title: COMPETITION_EN ? "Your test action" : "你的验证动作",
       prediction: deepSynthesis?.map?.meaning,
       action: COMPETITION_EN ? `First step: ${action.replace(/^First step:\s*/i, "")}` : `第一步：${action.replace(/^第一步：/, "")}`,
-      observableOutcome: COMPETITION_EN ? "Use the shortest useful window. Record the new fact, what you did, and whether the original judgment needs updating." : "使用能获得有效反馈的最短时间；记录新事实、自己实际做了什么，以及原判断是否需要更新。"
+      observableOutcome: COMPETITION_EN ? "Give the step enough time to produce a result. Write down what happened, what you did, and whether your original worry still fits." : "使用能获得有效反馈的最短时间；记录新事实、自己实际做了什么，以及原判断是否需要更新。"
     }));
     $("#startCycleButton").disabled = !experimentReady();
     $("#saveStatus").textContent = COMPETITION_EN ? "This part is yours to control. Check the observation and stopping conditions below." : "这部分由你决定，也可以停止。再核对观察、继续和停止条件。";
@@ -2612,7 +2613,7 @@ let interviewSummary = "";
     savedRecordId = null; activeCycle = null; await renderHistory(); await renderMemory(); reset();
   });
 
-  const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Live AI · Synthetic example input · No saving" : "实时 AI · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · AI 联网地图"; $(".status-strip").append(localBadge);
+  const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Live AI · Example input · Nothing saved" : "实时 AI · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · AI 联网地图"; $(".status-strip").append(localBadge);
   $("#enterDeskButton").addEventListener("click", () => enterDesk());
   if (DEMO_MODE) {
     if (!COMPETITION_MODE || params.has("view")) enterDesk({ animate: false });

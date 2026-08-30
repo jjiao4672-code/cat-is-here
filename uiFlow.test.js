@@ -162,8 +162,8 @@ test("competition presets show two distinct mechanisms without promising an idea
   assert.match(script, /I sent many job applications and have not received a response/);
   assert.match(html, /data-example-case="relationship"[\s\S]*data-example-case="job_search"/);
   assert.match(script, /competitionCase = button\.dataset\.exampleCase[\s\S]*COMPETITION_CASES\[competitionCase\]/);
-  assert.match(script, /anticipating a bad outcome keeps the user from letting reality begin/);
-  assert.match(script, /an external result becomes a judgment about personal ability/);
+  assert.match(script, /expecting the worst has made avoiding the conversation feel safer/);
+  assert.match(script, /the silence started to feel like a verdict on your ability/);
   assert.match(script, /The only reply was: ‘Saturday works\.’ The relationship outcome remains unknown/);
   assert.match(script, /You still do not know where the conversation will lead\. You no longer have to rely only on guessing/);
   assert.match(script, /even while afraid, you could take the part you controlled and ask reality for information/);
@@ -497,6 +497,21 @@ test("visible cat copy avoids mixed imagery and report language", () => {
   assert.match(script, /猫看完了你写的内容/);
   assert.match(script, /猫记下了目前的信息/);
   assert.match(assessment, /先把它当作一种可能，后面再核对/);
+});
+
+test("English competition copy stays conversational", () => {
+  assert.match(script, /Choose the closest option, or write your own/);
+  assert.match(script, /Did Cat put this in the right order/);
+  assert.match(script, /What small step could give you new information/);
+  assert.match(script, /Save anything from this session/);
+  assert.match(script, /A memory, message, or familiar situation came back/);
+  assert.match(script, /Live AI · Example input · Nothing saved/);
+  assert.match(script, /A GUESS YOU CAN CHANGE/);
+  assert.match(script, /setAttribute\("aria-label", "Example input"\)/);
+  assert.match(server, /Cat read what you wrote\. In your words:/);
+  assert.match(server, /Cat has what happened[\s\S]*What did it seem to mean to you/);
+  assert.doesNotMatch(server, /reflection: copy\[0\], question: copy\[0\]/);
+  assert.doesNotMatch(`${script}\n${server}`, /Make the prediction observable|add a real fact|Organize my judgment|This reflection ends here|What happened now and later|Choose the closest observable event|EDITABLE HYPOTHESIS/);
 });
 
 test("the unified journey keeps every inference correctable and event-specific", () => {
