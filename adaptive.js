@@ -1202,7 +1202,7 @@ let interviewSummary = "";
     $("#followupNote").value = savedOption ? "" : savedAnswer;
     $("#followupNote").placeholder = "";
     $("#followupNextButton").classList.remove("hidden");
-    $("#followupNextButton").disabled = true;
+    $("#followupNextButton").disabled = !selectedFollow && !$("#followupNote").value.trim();
     $("#followupNextButton span").textContent = COMPETITION_EN ? "Send this answer" : "发送这条回答";
     $("#finishFollowupsButton").classList.add("hidden");
     updateCompetitionStatus();

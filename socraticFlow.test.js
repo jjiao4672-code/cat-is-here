@@ -52,6 +52,11 @@ test("typed answers are sent with their questions and cannot trigger repeated fi
   assert.match(script, /duplicateQuestion \|\| \(repeatedField && !usefulSecondPass\)/);
 });
 
+test("going back restores an answer that can be submitted without reselecting it", () => {
+  assert.match(script, /savedOption \? "" : savedAnswer/);
+  assert.match(script, /followupNextButton"\)\.disabled = !selectedFollow && !\$\("#followupNote"\)\.value\.trim\(\)/);
+});
+
 test("user claims stay grounded in typed or confirmed answers", () => {
   assert.match(server, /!knownFields\.includes\("fact"\)/);
   assert.match(server, /最近具体发生了哪一件事/);

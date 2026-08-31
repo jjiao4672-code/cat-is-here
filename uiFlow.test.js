@@ -64,6 +64,7 @@ test("the confirmed map hands off to an experiment on the desk", () => {
 test("visible branding uses 猫在 and the proper name Cat Is Here", () => {
   assert.match(html, /<title>猫在｜Cat Is Here<\/title>/);
   assert.match(html, /id="app-title">猫在</);
+  assert.match(html, /class="hero-row" aria-label="和猫一起整理"/);
   assert.match(script, /document\.title = "Cat Is Here \| Competition Demo"/);
   assert.match(script, /set\("#app-title", "Cat Is Here"\)/);
   assert.match(server, /英文自称专名“Cat”，不用 the Cat/);
