@@ -43,6 +43,7 @@ test("redacts direct identifiers without removing observation dates", () => {
 });
 
 test("allows one explained everyday metaphor but rejects mixed imagery and personification", () => {
+  assert.deepEqual(rules.metaphorIssues("猫整理完了，你看看像不像。"), []);
   assert.deepEqual(rules.metaphorIssues("像按了门铃，却没听见里面的声音。没人回应是真的，里面发生了什么还不知道。"), []);
   assert.ok(rules.metaphorIssues("像门没有推开，又像线团缠住了脚。事实开始说话，情绪跑出来抓住你。").length);
 });

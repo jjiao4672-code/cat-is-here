@@ -25,7 +25,7 @@
     /verifiable connection|maintenance mechanism|counterfactual validation|functional avoidance|the model (?:shows|indicates)|analysis indicates/i
   ];
   const conceptTerms = ["反复寻求确认", "不确定性不耐受", "拒绝敏感", "反复负性思考", "体验回避", "自我批评", "完美主义式自我评价", "执行功能负荷", "回避性应对"];
-  const metaphorMarker = /(?:像(?!不像)|好比|如同|仿佛|就像|like\s+(?:a|an|the)\b|as if\b)/gi;
+  const metaphorMarker = /(?:(?<!不)像(?!不像)|好比|如同|仿佛|就像|like\s+(?:a|an|the)\b|as if\b)/gi;
   const personificationPattern = /(?:想法|担心|情绪|事实|记录|难受|预测).{0,8}(?:跑出来|跑得|坐到|挪到|发亮|说话|躲起来|抓住|走到)|(?:纸|线团|路线).{0,8}(?:告诉|说|压成|理清)/i;
   const mixedImageryPattern = /(?:门铃?|钥匙|房间).{0,80}(?:线团|画纸|航线|迷雾)|(?:线团|画纸|航线|迷雾).{0,80}(?:门铃?|钥匙|房间)/i;
 
