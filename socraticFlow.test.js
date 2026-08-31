@@ -70,6 +70,11 @@ test("secondary meaning probes cannot replace the user's main interpretation", (
   assert.match(script, /prediction: confirmedMap\.meaning/);
 });
 
+test("the map action field cannot be filled by a future experiment", () => {
+  assert.match(server, /行为字段只能问已经做了什么或没有做什么；未来动作留到实验页/);
+  assert.match(server, /targetField === "move"[\s\S]*this week\|next time\|tomorrow/);
+});
+
 test("the first follow-up after a concrete event asks for feeling before interpretation", () => {
   const feelingGate = server.indexOf('!["meaning", "feeling", "move", "result"].some');
   const selfWorthGate = server.indexOf('if (selfWorth && !knownModes.includes("counterevidence"))');

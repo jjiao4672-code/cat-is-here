@@ -138,6 +138,9 @@ function validateNextQuestion(data, context = {}) {
   if (knownFields.has(targetField) && !usefulSecondPass) throw new Error(`字段 ${targetField} 已经回答过，请转向尚未覆盖的部分`);
   if (mode !== "question" && knownModes.has(mode)) throw new Error(`步骤 ${mode} 已经问过`);
   const question = cleanVisible(data?.question, "下一问", 120);
+  if (targetField === "move" && /(?:你|接下来).{0,8}(?:打算|准备|可以|能)(?:怎么|做什么)|(?:what|which).{0,10}(?:can|could|will|would) you do|do you plan to|are you going to|this week|next time|tomorrow/i.test(question)) {
+    throw new Error("行为字段只能问已经做了什么或没有做什么；未来动作留到实验页");
+  }
   const sourceText = String(context.sourceText || "");
   const selfWorthPattern = /(?:我|自己).{0,8}(?:不够好|能力不行|没能力|很失败|是失败者)|I(?:'m| am).{0,8}(?:not good enough|a failure|incapable)/i;
   if (!selfWorthPattern.test(sourceText) && selfWorthPattern.test(`${reflection} ${question}`)) throw new Error("用户没有表达自我否定，不能替用户加入这一判断");
