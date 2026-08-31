@@ -235,6 +235,8 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   return synthesis;
 }
 
+const isCoreFieldAnswer = (answer) => answer?.targetField && !(answer.targetField === "meaning" && ["alternative", "counterevidence"].includes(answer.mode));
+
 function validateClosingFeedback(data, allowedDates) {
   const forbidden = /你太棒|坚持就是胜利|失败者|因为你懒惰|你不够努力|你失败了|已经治愈|问题已经解决|提升自信|变得自信|成为更好的自己|你(?:就是|是)(?:一个)?.{0,12}(?:的人|人格)/;
   const specificWins = (Array.isArray(data?.specificWins) ? data.specificWins : []).slice(0, 4).map((item) => ({
@@ -306,7 +308,7 @@ async function handleApi(req, res) {
       const language = body.language === "en" ? "en" : "zh";
       const round = Math.max(1, Math.min(8, Number(body.round) || 1));
       const priorAnswers = (Array.isArray(body.priorAnswers) ? body.priorAnswers : []).slice(0, 12).map((answer) => ({ id: String(answer?.id || ""), question: String(answer?.question || "").slice(0, 160), targetField: String(answer?.targetField || ""), mode: String(answer?.mode || "question"), answer: String(answer?.answer || "").slice(0, 320), unknown: Boolean(answer?.unknown) }));
-      const knownFields = [...new Set([...(body.eventIsSpecific ? ["fact"] : []), ...priorAnswers.map((answer) => answer.targetField).filter(Boolean)])];
+      const knownFields = [...new Set([...(body.eventIsSpecific ? ["fact"] : []), ...priorAnswers.filter(isCoreFieldAnswer).map((answer) => answer.targetField)])];
       const knownModes = [...new Set(priorAnswers.map((answer) => answer.mode))];
       const previousQuestions = priorAnswers.map((answer) => answer.question).filter(Boolean);
       const outputLanguage = language === "en" ? "Use plain English only. Cat is a proper name; never write ‘the Cat’." : "全部用户可见内容使用中文。";
@@ -355,7 +357,7 @@ ${catLiteraryStyle}
       const sourceByField = { fact: ["ENTRY_01"], meaning: [], feeling: [], move: [], result: [], hypothesis: sourceRefs, unknown: sourceRefs };
       const sourceValuesByField = { fact: String(body.note || "").trim() };
       (Array.isArray(body.answers) ? body.answers : []).forEach((answer) => {
-        if (!sourceByField[answer?.targetField]) return;
+        if (!sourceByField[answer?.targetField] || !isCoreFieldAnswer(answer)) return;
         sourceByField[answer.targetField].push(String(answer.id));
         if (answer.unknown) sourceValuesByField[answer.targetField] = body.language === "en" ? "Not yet known" : "还不知道";
         else if (String(answer.answer || "").trim()) sourceValuesByField[answer.targetField] = String(answer.answer).trim();

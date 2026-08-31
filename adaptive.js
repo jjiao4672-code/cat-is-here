@@ -91,7 +91,8 @@ let interviewSummary = "";
   const validVisible = (value) => typeof value === "string" && Boolean(value.trim()) && !invalidVisibleValue.test(value.trim().replace(/\s+/g, " ")) && !punctuationOnly.test(value.trim());
   const missingText = (asked = false) => COMPETITION_EN ? (asked ? "Not yet known" : "Not asked yet") : (asked ? "还不知道" : "还没说到");
   const safeVisible = (value, asked = false) => validVisible(value) ? value.trim() : missingText(asked);
-  const answeredFields = () => new Set(deepAnswers.map((answer) => answer.targetField).filter(Boolean));
+  const isCoreFieldAnswer = (answer) => answer?.targetField && !(answer.targetField === "meaning" && ["alternative", "counterevidence"].includes(answer.mode));
+  const answeredFields = () => new Set(deepAnswers.filter(isCoreFieldAnswer).map((answer) => answer.targetField));
 
   function updateLandingEntry() {
     const button = $("#enterDeskButton");
@@ -1104,7 +1105,7 @@ let interviewSummary = "";
   }
 
   async function requestNextInterviewQuestion({ retry = false } = {}) {
-    const missing = ["meaning", "feeling", "move", "result"].find((field) => !deepAnswers.some((answer) => answer.targetField === field));
+    const missing = ["meaning", "feeling", "move", "result"].find((field) => !answeredFields().has(field));
     if (interviewRound >= 8) return missing ? renderRequiredGap(missing) : renderUserSummaryPrompt();
     if (interviewSynthetic) return interviewRound >= 4 ? (missing ? renderRequiredGap(missing) : renderUserSummaryPrompt()) : renderInterviewQuestion(syntheticInterview(competitionCase, interviewRound + 1));
     renderInterviewLoading();
@@ -1115,11 +1116,12 @@ let interviewSummary = "";
         round: interviewRound + 1, language: COMPETITION_EN ? "en" : "zh", safetyRisk: false
       });
       const duplicateQuestion = deepAnswers.some((answer) => String(answer.question || "").replace(/[\s?？]/g, "").toLowerCase() === String(data.question || "").replace(/[\s?？]/g, "").toLowerCase());
-      const repeatedField = deepAnswers.some((answer) => answer.targetField === data.targetField);
-      const usefulSecondPass = data.targetField === "meaning" && ["counterevidence", "alternative"].includes(data.mode) && !deepAnswers.some((answer) => answer.mode === data.mode);
+      const secondaryMeaning = data.targetField === "meaning" && ["counterevidence", "alternative"].includes(data.mode);
+      const usefulSecondPass = secondaryMeaning && !deepAnswers.some((answer) => answer.mode === data.mode);
+      const repeatedField = secondaryMeaning ? !usefulSecondPass : answeredFields().has(data.targetField);
       if (duplicateQuestion || (repeatedField && !usefulSecondPass)) return missing ? renderRequiredGap(missing) : renderUserSummaryPrompt();
       if (data.readyForMap && deepAnswers.length >= 2) {
-        const requiredGap = ["meaning", "feeling", "move", "result"].find((field) => !deepAnswers.some((answer) => answer.targetField === field));
+        const requiredGap = ["meaning", "feeling", "move", "result"].find((field) => !answeredFields().has(field));
         if (requiredGap) return renderRequiredGap(requiredGap);
         return renderUserSummaryPrompt();
       }
@@ -1212,14 +1214,14 @@ let interviewSummary = "";
     if (interviewSynthetic) {
       const base = COMPETITION_EN ? competitionSynthesis(competitionCase) : competitionSynthesisZh(competitionCase);
       if (interviewPartial) {
-        const byField = Object.fromEntries(deepAnswers.filter((answer) => answer.targetField).map((answer) => [answer.targetField, answer.unknown ? missingText(true) : answer.answer]));
+        const byField = Object.fromEntries(deepAnswers.filter(isCoreFieldAnswer).map((answer) => [answer.targetField, answer.unknown ? missingText(true) : answer.answer]));
         const canGuess = Boolean(byField.meaning && byField.move && !semanticMissing.test(byField.meaning) && !semanticMissing.test(byField.move));
         base.map = {
           fact: openingNote,
           meaning: byField.meaning || missingText(), feeling: byField.feeling || missingText(), move: byField.move || missingText(), result: byField.result || missingText(),
           hypothesis: canGuess ? base.map.hypothesis : missingText(), unknown: missingText(true)
         };
-        base.mapSources = Object.fromEntries(Object.keys(base.map).map((key) => [key, key === "fact" ? ["ENTRY_01"] : deepAnswers.filter((answer) => answer.targetField === key).map((answer) => answer.id)]));
+        base.mapSources = Object.fromEntries(Object.keys(base.map).map((key) => [key, key === "fact" ? ["ENTRY_01"] : deepAnswers.filter((answer) => isCoreFieldAnswer(answer) && answer.targetField === key).map((answer) => answer.id)]));
         base.insight = COMPETITION_EN ? "Cat organized only what you have said so far. Unasked parts stay marked. You decide whether to continue." : "猫只整理了你已经说到的部分。还没问到的地方继续标着，由你决定要不要继续。";
       }
       deepSynthesis = base;
@@ -2363,7 +2365,10 @@ let interviewSummary = "";
   $("#continueDeepButton").addEventListener("click", () => requestNextInterviewQuestion());
   $("#toExperimentButton").addEventListener("click", async () => {
     if (!feedback || !mapCanExperiment()) return;
+    const confirmedMap = editedMap();
     await saveObservation({ silent: true });
+    deepSynthesis.map = confirmedMap;
+    deepSynthesis.experiments = deepSynthesis.experiments.map((experiment) => ({ ...experiment, prediction: confirmedMap.meaning }));
     showDeskExperiment();
   });
   ["#experimentPrediction", "#experimentAction", "#experimentOutcome", "#experimentContinue", "#experimentFallback", "#experimentMeaning", "#experimentWhen", "#experimentContext"].forEach((selector) => {

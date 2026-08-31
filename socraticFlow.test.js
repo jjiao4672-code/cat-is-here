@@ -61,6 +61,15 @@ test("user claims stay grounded in typed or confirmed answers", () => {
   assert.doesNotMatch(script.match(/function renderRequiredGap\(field\)[\s\S]*?\n  }/)?.[0] || "", /不够好|停止继续投递|后来更焦虑/);
 });
 
+test("secondary meaning probes cannot replace the user's main interpretation", () => {
+  assert.match(server, /const isCoreFieldAnswer = .*alternative.*counterevidence/);
+  assert.match(server, /priorAnswers\.filter\(isCoreFieldAnswer\)/);
+  assert.match(server, /!isCoreFieldAnswer\(answer\)/);
+  assert.match(script, /answeredFields = \(\) => new Set\(deepAnswers\.filter\(isCoreFieldAnswer\)/);
+  assert.match(script, /deepSynthesis\.map = confirmedMap/);
+  assert.match(script, /prediction: confirmedMap\.meaning/);
+});
+
 test("the first follow-up after a concrete event asks for feeling before interpretation", () => {
   const feelingGate = server.indexOf('!["meaning", "feeling", "move", "result"].some');
   const selfWorthGate = server.indexOf('if (selfWorth && !knownModes.includes("counterevidence"))');
