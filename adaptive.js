@@ -565,13 +565,13 @@ let interviewSummary = "";
     $("#deepUpdateCard").classList.toggle("hidden", !deepUpdateSummary);
     $("#deepUpdateSummary").textContent = deepUpdateSummary;
     if (deepSynthesis) renderDeepResult();
-    $("#toExperimentButton").disabled = feedback !== "很像" || !mapCanExperiment(map);
+    $("#toExperimentButton").disabled = feedback !== "很像" || !mapCanExperiment();
     resetCoach();
     updateCompetitionStatus();
     if (COMPETITION_EN) applyCompetitionCopy("result");
   }
 
-  function mapCanExperiment(map = deepSynthesis?.map) {
+  function mapCanExperiment(map = document.querySelector("[data-map-key]") ? editedMap() : deepSynthesis?.map) {
     return Boolean(map && [map.fact, map.meaning].every((value) => validVisible(value) && !semanticMissing.test(value)));
   }
 
@@ -1335,6 +1335,7 @@ let interviewSummary = "";
       const visibleLabel = COMPETITION_EN ? competitionMapLabels[key] : label;
       const title = document.createElement("label"); title.htmlFor = `map-${key}`; title.textContent = `${index < 5 ? `${index + 1}. ` : ""}${visibleLabel}`;
       const input = document.createElement("textarea"); input.id = `map-${key}`; input.dataset.mapKey = key; input.maxLength = 240; input.value = safeVisible(deepSynthesis.map[key], key === "fact" || key === "unknown" || answeredFields().has(key));
+      input.addEventListener("input", () => { $("#toExperimentButton").disabled = feedback !== "很像" || !mapCanExperiment(); });
       if (deepUpdatedFields.includes(key)) { const changed = document.createElement("span"); changed.className = "map-updated-label"; changed.textContent = COMPETITION_EN ? "Changed to your words" : "按你的话改了"; wrap.append(changed); }
       input.addEventListener("change", () => saveObservation({ silent: true }).catch(() => {}));
       wrap.append(title, input); fields.append(wrap);
@@ -1535,7 +1536,7 @@ let interviewSummary = "";
 
   function editedMap() {
     const values = Object.fromEntries([...document.querySelectorAll("[data-map-key]")].map((input) => [input.dataset.mapKey, input.value.trim()]));
-    return Object.fromEntries(Object.keys(mapLabels).map((key) => [key, values[key] || deepSynthesis?.map?.[key] || "尚未确认"]));
+    return Object.fromEntries(Object.keys(mapLabels).map((key) => [key, Object.hasOwn(values, key) ? values[key] : deepSynthesis?.map?.[key] || "尚未确认"]));
   }
 
   async function saveObservation({ silent = false } = {}) {
@@ -2364,7 +2365,7 @@ let interviewSummary = "";
   $("#setupApiKeyButton").addEventListener("click", () => { window.location.href = "/api-setup.html"; });
   $("#continueDeepButton").addEventListener("click", () => requestNextInterviewQuestion());
   $("#toExperimentButton").addEventListener("click", async () => {
-    if (!feedback || !mapCanExperiment()) return;
+    if (!feedback || !mapCanExperiment(editedMap())) return;
     const confirmedMap = editedMap();
     await saveObservation({ silent: true });
     deepSynthesis.map = confirmedMap;
