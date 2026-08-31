@@ -142,6 +142,7 @@ function validateNextQuestion(data, context = {}) {
     throw new Error("行为字段只能问已经做了什么或没有做什么；未来动作留到实验页");
   }
   const sourceText = String(context.sourceText || "");
+  if (/\bstopped and waited\b/i.test(sourceText) && /\bstopped waiting\b/i.test(`${reflection} ${question}`)) throw new Error("短复述把继续等待误写成停止等待");
   const selfWorthPattern = /(?:我|自己).{0,8}(?:不够好|能力不行|没能力|很失败|是失败者)|I(?:'m| am).{0,8}(?:not good enough|a failure|incapable)/i;
   if (!selfWorthPattern.test(sourceText) && selfWorthPattern.test(`${reflection} ${question}`)) throw new Error("用户没有表达自我否定，不能替用户加入这一判断");
   const questionMarks = (question.match(/[?？]/g) || []).length;

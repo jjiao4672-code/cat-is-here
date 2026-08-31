@@ -75,6 +75,11 @@ test("the map action field cannot be filled by a future experiment", () => {
   assert.match(server, /targetField === "move"[\s\S]*this week\|next time\|tomorrow/);
 });
 
+test("short reflections cannot reverse waiting into stopping", () => {
+  assert.match(server, /stopped and waited[\s\S]*stopped waiting/);
+  assert.match(server, /短复述把继续等待误写成停止等待/);
+});
+
 test("the first follow-up after a concrete event asks for feeling before interpretation", () => {
   const feelingGate = server.indexOf('!["meaning", "feeling", "move", "result"].some');
   const selfWorthGate = server.indexOf('if (selfWorth && !knownModes.includes("counterevidence"))');
