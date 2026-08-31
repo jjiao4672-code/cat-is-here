@@ -521,7 +521,7 @@ test("visible cat copy avoids mixed imagery and report language", () => {
 });
 
 test("English competition copy stays conversational", () => {
-  assert.match(script, /Choose the closest option, or write your own/);
+  assert.match(script, /Choose a broad category\. If one specific event already comes to mind, write it instead/);
   assert.match(script, /Did Cat put this in the right order/);
   assert.match(script, /What small step could give you new information/);
   assert.match(script, /Save anything from this session/);

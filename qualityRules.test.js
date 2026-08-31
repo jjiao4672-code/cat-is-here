@@ -42,6 +42,17 @@ test("redacts direct identifiers without removing observation dates", () => {
   assert.match(value, /2026-08-25/);
 });
 
+test("rejects scenario details that the user never introduced", () => {
+  const broadChange = "我经历了一次重大改变，感到难过。";
+  assert.deepEqual(rules.ungroundedScenarioIssues(broadChange, { question: "这件事让你怎么看待自己或这段关系？", options: ["这段关系没那么可靠"] }), ["relationship"]);
+  assert.deepEqual(rules.ungroundedScenarioIssues(broadChange, "是不是工作或考试没有做好？"), ["work_or_study"]);
+  assert.deepEqual(rules.ungroundedScenarioIssues(broadChange, "是不是家人不理解你？"), ["family"]);
+  assert.deepEqual(rules.ungroundedScenarioIssues(broadChange, "是不是房租或债务带来了压力？"), ["money_or_housing"]);
+  assert.deepEqual(rules.ungroundedScenarioIssues(broadChange, "是不是睡眠或药物发生了变化？"), ["health_or_substance"]);
+  assert.deepEqual(rules.ungroundedScenarioIssues("我和伴侣最近联系变少", "你觉得这段关系发生了什么？"), []);
+  assert.deepEqual(rules.ungroundedScenarioIssues("最近工作截止期很多", "这项工作让你怎么理解这段处境？"), []);
+});
+
 test("allows one explained everyday metaphor but rejects mixed imagery and personification", () => {
   assert.deepEqual(rules.metaphorIssues("猫整理完了，你看看像不像。"), []);
   assert.deepEqual(rules.metaphorIssues("像按了门铃，却没听见里面的声音。没人回应是真的，里面发生了什么还不知道。"), []);

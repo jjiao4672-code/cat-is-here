@@ -367,11 +367,11 @@ let interviewSummary = "";
     }
     selected = state.answers[question.id] ? [...state.answers[question.id]] : [];
     const progress = engine.progress(state);
-    $("#questionKicker").textContent = question.kicker;
-    $("#questionTitle").textContent = question.id === "ENTRY_01" ? "猫在。\n发生了什么？" : question.id === "UNDERSTANDING_01" ? `猫听到的是：“${openingNote || engine.answerLabels(state, "ENTRY_01")}”。猫猜你可能有些不安或难受。猫听对了吗？` : question.title;
-    $("#questionHint").textContent = question.id === "ENTRY_01" ? "选一个最接近的，也可以直接写。" : question.hint;
-    $("#stepLabel").textContent = question.id === "ENTRY_01" ? "眼前这一件事" : ["NEED_01", "GROUND_01"].includes(question.id) ? "先按此刻的需要开始" : `猫正在核对信息 ${progress.current} / 约 ${progress.total}`;
-    $("#selectedCount").textContent = selected.length ? `已选择 ${selected.length} 项` : question.id === "ENTRY_01" ? "选项或一句话，任选一种" : question.max > 1 ? `最多选 ${question.max} 项` : "选最接近的一项";
+    $("#questionKicker").textContent = question.id === "ENTRY_01" ? "第 1 步：先选大致类别" : question.kicker;
+    $("#questionTitle").textContent = question.id === "ENTRY_01" ? "猫在。\n这次更接近哪一类情况？" : question.id === "UNDERSTANDING_01" ? `猫听到的是：“${openingNote || engine.answerLabels(state, "ENTRY_01")}”。猫猜你可能有些不安或难受。猫听对了吗？` : question.title;
+    $("#questionHint").textContent = question.id === "ENTRY_01" ? "先选一个大致类别；如果已经想到具体事情，也可以直接写。" : question.hint;
+    $("#stepLabel").textContent = question.id === "ENTRY_01" ? "先选一类情况" : ["NEED_01", "GROUND_01"].includes(question.id) ? "先按此刻的需要开始" : `猫正在核对信息 ${progress.current} / 约 ${progress.total}`;
+    $("#selectedCount").textContent = selected.length ? `已选择 ${selected.length} 项` : question.id === "ENTRY_01" ? "选一个类别，或直接写具体事情" : question.max > 1 ? `最多选 ${question.max} 项` : "选最接近的一项";
     $("#progressBar").style.width = `${progress.percent}%`;
     $("#backButton").disabled = state.path.length === 1;
     $("#nextButton span").textContent = question.id === "ENTRY_01" ? "发送这件事" : question.id === "RES_01" ? "请猫整理回答" : "让猫继续问";
@@ -396,7 +396,7 @@ let interviewSummary = "";
     const allowsNote = !["CONSENT_01", "NEED_01", "GROUND_01"].includes(question.id) && !question.id.startsWith("SAFE_");
     freeWrap.style.display = allowsNote ? "grid" : "none";
     if (allowsNote) {
-      freeWrap.querySelector("label").textContent = question.id === "ENTRY_01" ? "写下发生的事" : question.id === "UNDERSTANDING_01" ? "哪里不对？请按你的说法改" : "选项没说准时，可以补充一句（可不写）";
+      freeWrap.querySelector("label").textContent = question.id === "ENTRY_01" ? "已经想到具体事情，也可以直接写" : question.id === "UNDERSTANDING_01" ? "哪里不对？请按你的说法改" : "选项没说准时，可以补充一句（可不写）";
       $("#freeNote").value = answerNotes[question.id] || "";
       $("#freeNote").placeholder = question.id === "ENTRY_01" ? "例如：这周对方回复消息的次数比平时少。" : question.id === "UNDERSTANDING_01" ? "例如：不是生气，更多是失落。" : "补充只留在当前会话；主动进入深度分析后才会发送给 AI。";
     }
@@ -828,17 +828,17 @@ let interviewSummary = "";
     set("#mapHotspotHint", "Problem Map available after Input");
     if (view === "question") {
       set("#sceneLabel", "INPUT");
-      set("#heroTitle", "Cat is here.\nWhat happened?");
-      set("#heroDescription", "Choose the closest option, or describe one thing that happened.");
-      set("#stepLabel", "ONE EVENT");
-      set("#selectedCount", "Choose an option or write one sentence");
-      set("#questionKicker", "INPUT · WHAT HAPPENED");
-      set("#questionTitle", "Cat is here.\nWhat happened?");
-      set("#questionHint", "Choose the closest option, or write your own.");
+      set("#heroTitle", "Cat is here.\nWhat kind of situation is this closest to?");
+      set("#heroDescription", "Choose a broad category. If one specific event already comes to mind, write it instead.");
+      set("#stepLabel", "CHOOSE A CATEGORY");
+      set("#selectedCount", "Choose a category, or write one specific event");
+      set("#questionKicker", "INPUT · SITUATION");
+      set("#questionTitle", "Cat is here.\nWhat kind of situation is this closest to?");
+      set("#questionHint", "Choose a broad category. If one specific event already comes to mind, write it instead.");
       const optionLabels = ["Something changed in a relationship or response", "A conflict, rejection, separation, or boundary issue", "A major change, loss, or transition", "A task, deadline, review, or evaluation", "Pressure from money, housing, work, study, or caregiving", "A change in my body, sleep, medication, drinking, or substance use", "A memory, message, or familiar situation came back", "No single event stands out", "I can’t recall yet"];
       [...$("#optionsGrid").children].forEach((button, index) => { button.classList.remove("hidden"); button.textContent = optionLabels[index] || button.textContent; });
       $("#freeNote").maxLength = 320;
-      $("#freeNote").previousElementSibling.textContent = "Write what happened";
+      $("#freeNote").previousElementSibling.textContent = "Already have one specific event? Write it here";
       $("#freeNote").placeholder = "For example: They replied fewer times this week than usual.";
       set("#privacyTitle", "Data note");
       set("#privacyDescription", "This response is sent to AI to generate the next question. It is not saved automatically.");
@@ -1220,7 +1220,7 @@ let interviewSummary = "";
       evidence: { reflection: en ? "We have the judgment, but not what currently supports it." : "原来的判断有了，但还没核对目前凭什么这样判断。", question: en ? "What observable fact currently supports this judgment?" : "目前有什么可以观察到的事实支持这个判断？", options: en ? ["A specific response or result", "A repeated pattern", "No clear fact yet"] : ["一个具体回应或结果", "一个重复出现的情况", "目前没有明确事实"] },
       counterevidence: { reflection: en ? "A judgment needs room for facts that do not fit it." : "一个判断也需要给不符合它的事实留位置。", question: en ? "What fact might make this judgment less certain?" : "什么事实可能让这个判断没那么确定？", options: en ? ["Specific outside feedback", "Something concrete I completed", "I do not know yet"] : ["具体的外部反馈", "我完成过的一件具体事情", "我还不知道"] },
       alternative: { reflection: en ? "The original judgment may not be the only explanation." : "原来的判断可能不是唯一解释。", question: en ? "What other explanation could also fit these facts?" : "还有什么解释也可能符合这些事实？", options: en ? ["Timing or circumstances", "A mismatch rather than a verdict", "I do not know yet"] : ["时间或现实条件", "不匹配而不是对我的判决", "我还不知道"] },
-      protective_purpose: { reflection: en ? "We have what you did and what followed." : "已经看见你做了什么，以及后来发生了什么。", question: en ? "Without assuming it was deliberate, what might this response have helped you avoid?" : "不假定这是故意的，这个反应可能帮你避开了什么？", options: en ? ["More rejection or conflict", "Acting before I felt ready", "I do not think it protected me"] : ["再次被拒绝或发生冲突", "在没准备好时行动", "我不觉得它在保护我"] }
+      protective_purpose: { reflection: en ? "We have what you did and what followed." : "已经看见你做了什么，以及后来发生了什么。", question: en ? "Without assuming it was deliberate, what might this response have helped you avoid?" : "不假定这是故意的，这个反应可能帮你避开了什么？", options: en ? ["An outcome I did not feel ready to face", "Acting before I felt ready", "I do not think it protected me"] : ["一个当时还没准备好面对的结果", "在没准备好时行动", "我不觉得它在保护我"] }
     }[mode];
     renderInterviewQuestion({ ...copy, targetField: "meaning", mode, options: copy.options.map((label, index) => ({ id: /不知道|do not know/i.test(label) ? "unknown" : `depth_${index + 1}`, label })) });
   }
@@ -2302,7 +2302,7 @@ let interviewSummary = "";
       if (question?.id === "ENTRY_01") {
         const note = $("#freeNote").value.trim();
         const eventChoice = selected[0] || "";
-        if (!eventChoice && !note) { $("#selectedCount").textContent = COMPETITION_EN ? "Choose the closest option, or write one thing that happened." : "选一个最接近的，或者写一句发生的事。"; return; }
+        if (!eventChoice && !note) { $("#selectedCount").textContent = COMPETITION_EN ? "Choose a category, or write one specific event." : "选一个大致类别，或者直接写一件具体的事。"; return; }
         if (hasSafetyLanguage(note)) {
           $("#questionKicker").textContent = COMPETITION_EN ? "SAFETY FIRST" : "现在先处理安全";
           $("#questionTitle").textContent = COMPETITION_EN ? "Use real-world emergency or crisis support now." : "请立即联系可信任的人陪着你，并联系当地紧急服务或危机支持。";

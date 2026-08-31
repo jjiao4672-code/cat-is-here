@@ -13,7 +13,14 @@ test("entry accepts an option, text, or both and keeps text primary", () => {
   assert.match(script, /eventIsSpecific: openingWasTyped/);
   assert.match(script, /state\.answers\.ENTRY_01 = eventChoice \? \[eventChoice\] : \[inferEntry\(openingNote\)\]/);
   assert.match(html, /选一个最接近的，也可以直接写|id="freeNote"/);
-  assert.match(script, /选一个最接近的，或者写一句发生的事/);
+  assert.match(script, /选一个大致类别，或者直接写一件具体的事/);
+});
+
+test("the category entry and concrete-event gate ask two different things", () => {
+  assert.match(script, /这次更接近哪一类情况/);
+  assert.match(script, /先选一个大致类别；如果已经想到具体事情，也可以直接写/);
+  assert.match(script, /eventIsSpecific: openingWasTyped/);
+  assert.match(server, /最近哪一件事让你开始难受/);
 });
 
 test("each live round depends on confirmed prior answers and returns one question", () => {
@@ -65,6 +72,10 @@ test("user claims stay grounded in typed or confirmed answers", () => {
   assert.match(server, /cleanedMap\[key\] = cleanVisible\(sourceValuesByField\[key\]/);
   assert.match(server, /const refs = \(sourceByField\[key\] \|\| \[\]\)/);
   assert.doesNotMatch(script.match(/function renderRequiredGap\(field\)[\s\S]*?\n  }/)?.[0] || "", /不够好|停止继续投递|后来更焦虑/);
+  assert.match(server, /ungroundedScenarioIssues\(sourceText, \{ reflection, question, options \}\)/);
+  assert.match(server, /ungroundedScenarioIssues\(synthesisSource, synthesis\)/);
+  assert.match(server, /禁止用常见案例补空白/);
+  assert.doesNotMatch(server.match(/function fallbackNextQuestion[\s\S]*?\n}/)?.[0] || "", /再次被拒绝或发生冲突|More rejection or conflict/);
 });
 
 test("secondary meaning probes cannot replace the user's main interpretation", () => {

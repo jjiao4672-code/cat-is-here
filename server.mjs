@@ -12,7 +12,7 @@ let apiKey = process.env.OPENAI_API_KEY || "";
 let apiBase = (process.env.OPENAI_BASE_URL || "https://api.deepseek.com").replace(/\/$/, "");
 let model = process.env.OPENAI_MODEL || "deepseek-v4-pro";
 const root = dirname(fileURLToPath(import.meta.url));
-const { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues } = qualityRules;
+const { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues, ungroundedScenarioIssues } = qualityRules;
 const { createRequestGate } = requestGate;
 const takeClientRequest = createRequestGate({ limit: hostedCompetition ? 120 : 40 });
 const takeGlobalRequest = createRequestGate({ limit: 500, maxKeys: 1 });
@@ -170,6 +170,8 @@ function validateNextQuestion(data, context = {}) {
     id: cleanVisible(item?.id || `option_${index + 1}`, "选项 ID", 32),
     label: cleanVisible(item?.label, `第 ${index + 1} 个选项`, 80)
   }));
+  const ungroundedScenarios = ungroundedScenarioIssues(sourceText, { reflection, question, options });
+  if (ungroundedScenarios.length) throw new Error(`用户没有提到这些场景，不能加入问题或选项：${ungroundedScenarios.join(",")}`);
   if (!selfWorthPattern.test(sourceText) && selfWorthPattern.test(JSON.stringify({ reflection, question, options }))) throw new Error("用户没有表达自我否定，不能替用户加入这一判断");
   if (new Set(options.map((item) => item.label.toLowerCase())).size !== options.length) throw new Error("定制选项必须互斥且不重复");
   const previousQuestions = (Array.isArray(context.previousQuestions) ? context.previousQuestions : []).map((item) => String(item).replace(/[\s?？]/g, "").toLowerCase());
@@ -189,7 +191,7 @@ function fallbackNextQuestion(language, expectedStage) {
     alternative: en ? ["One explanation is not the whole story.", "What other explanation could also fit these facts?", "Timing or circumstances", "I do not know yet"] : ["一种解释还不是全部。", "还有什么解释也可能符合这些事实？", "时间或现实条件", "我还不知道"],
     action: en ? ["Cat has the judgment and the other possibilities.", "What did that judgment lead you to do or stop doing?", "I took one concrete action", "I held back or stopped"] : ["猫记下了原判断和其他可能。", "这个判断让你做了什么，或者停止了什么？", "我做了一个具体动作", "我退后了或停下了"],
     result: en ? ["Cat has what you did next.", "What changed right away, and what happened later?", "Something changed over time", "There was no clear change"] : ["猫记下了你接下来的行动。", "这样做当下带来了什么，后来又怎样？", "前后出现了一些变化", "没有明显变化"],
-    protective_purpose: en ? ["This response had a consequence.", "Without assuming it was deliberate, what might this response have helped you avoid?", "More rejection or conflict", "I do not think it was protecting me"] : ["这个反应带来了一个结果。", "不假定这是故意的，它可能帮你避开了什么？", "再次被拒绝或发生冲突", "我不觉得它在保护我"],
+    protective_purpose: en ? ["This response had a consequence.", "Without assuming it was deliberate, what might this response have helped you avoid?", "An outcome I did not feel ready to face", "I do not think it was protecting me"] : ["这个反应带来了一个结果。", "不假定这是故意的，它可能帮你避开了什么？", "一个当时还没准备好面对的结果", "我不觉得它在保护我"],
     feeling: en ? ["Cat has what happened.", "What did you feel when this happened?", "Worried or tense", "Sad or discouraged"] : ["猫先记下了这件事。", "这件事发生时，你有什么感受？", "担心或紧张", "难过或失落"]
   }[key];
   return { reflection: copy[0], question: copy[1], targetField: expectedStage?.targetField || "meaning", mode: key, readyForMap: false, options: [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }, { id: "unknown", label: en ? "I do not know yet" : "我还不知道" }] };
@@ -278,6 +280,9 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
     experiments,
     experiment: experiments[0].action
   };
+  const synthesisSource = JSON.stringify({ fields: sourceValuesByField, probes: probeAnswers });
+  const ungroundedScenarios = ungroundedScenarioIssues(synthesisSource, synthesis);
+  if (ungroundedScenarios.length) throw new Error(`用户没有提到这些场景，不能加入问题地图或实验：${ungroundedScenarios.join(",")}`);
   if (language === "en" && /[\u3400-\u9fff]/.test(JSON.stringify(synthesis))) throw new Error("English competition output contains Chinese text");
   return synthesis;
 }
@@ -383,7 +388,7 @@ async function handleApi(req, res) {
 ${catLiteraryStyle}
 输出语言：${outputLanguage}
 任务：这是第 ${round} 轮，只处理用户眼前的一件事。事件：${JSON.stringify(body.event || body.note || "")}。宽泛选项仅作入口：${JSON.stringify(body.eventChoice || "")}。此前逐轮确认：${JSON.stringify(priorAnswers)}。已覆盖字段：${JSON.stringify(knownFields)}。已走过步骤：${JSON.stringify(knownModes)}。本轮必须进入：${JSON.stringify(expectedStage)}。
-苏格拉底顺序固定为：具体事实 → 感受 → 用户作出的判断 → 支持判断的可观察依据 → 可能推翻判断的事实 → 用户自己提出其他解释 → 判断带来的既有行动或回避 → 当下和后来的结果 → 这个反应可能帮助避开什么。选项不是结论。evidence 问“目前凭什么这样判断”，counterevidence 问什么事实会让判断没那么确定，alternative 先让用户自己找其他解释，protective_purpose 只能问可能作用并允许“它没有在保护我”，不能断言用户故意这样做。短复述只使用用户刚刚明确说过的内容，并在一句内指出当前连接，不能补写情绪、想法、动作、目的或结果。${selfWorthInstruction}
+苏格拉底顺序固定为：具体事实 → 感受 → 用户作出的判断 → 支持判断的可观察依据 → 可能推翻判断的事实 → 用户自己提出其他解释 → 判断带来的既有行动或回避 → 当下和后来的结果 → 这个反应可能帮助避开什么。选项不是结论。evidence 问“目前凭什么这样判断”，counterevidence 问什么事实会让判断没那么确定，alternative 先让用户自己找其他解释，protective_purpose 只能问可能作用并允许“它没有在保护我”，不能断言用户故意这样做。短复述只使用用户刚刚明确说过的内容，并在一句内指出当前连接，不能补写情绪、想法、动作、目的或结果。关系、工作学习、家庭、金钱住房、健康用药等具体场景词，只有在事件或用户已确认回答明确出现时才能使用；禁止用常见案例补空白，问题和全部选项都遵守。信息不足时使用“这件事”“这段处境”“还需要更多信息”等中性表达。${selfWorthInstruction}
 每次只返回一句短复述和一个下一问，下一问必须依赖最新回答且不得重复。targetField 必须严格使用本轮指定值；mode 必须严格使用本轮指定值。move 只问事情发生后用户已经做了什么或没有做什么；地图完成前禁止问用户希望、打算、可以或将会做什么，未来动作留到实验页。给 1-3 个互斥口语选项，同时鼓励自由输入；允许“还不知道”。不得诊断、追溯童年或人格、替第三方断言动机，也不得一次问两个问题。只有全部阶段走完才令 readyForMap 为 true；前端随后要求用户自己总结。只返回 JSON：{"reflection":"...","question":"...？","targetField":"${expectedStage.targetField}","mode":"${expectedStage.mode}","readyForMap":false,"options":[{"id":"a","label":"..."},{"id":"b","label":"..."},{"id":"unknown","label":"还不知道"}]}`;
       try {
         return send(res, 200, await askValidated(prompt, (data) => validateNextQuestion(data, { language, previousQuestions, knownFields, knownModes, sourceText, expectedStage })));

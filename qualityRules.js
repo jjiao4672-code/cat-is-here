@@ -28,6 +28,13 @@
   const metaphorMarker = /(?:(?<!不)像(?!不像)|好比|如同|仿佛|就像|like\s+(?:a|an|the)\b|as if\b)/gi;
   const personificationPattern = /(?:想法|担心|情绪|事实|记录|难受|预测).{0,8}(?:跑出来|跑得|坐到|挪到|发亮|说话|躲起来|抓住|走到)|(?:纸|线团|路线).{0,8}(?:告诉|说|压成|理清)/i;
   const mixedImageryPattern = /(?:门铃?|钥匙|房间).{0,80}(?:线团|画纸|航线|迷雾)|(?:线团|画纸|航线|迷雾).{0,80}(?:门铃?|钥匙|房间)/i;
+  const scenarioScopes = [
+    { name: "relationship", source: /关系|伴侣|对象|男友|女友|丈夫|妻子|婚姻|恋爱|分手|分开|对方|联系|回复|消息|疏远|在乎|朋友|同事|冲突|拒绝|边界|\b(?:relationship|partner|spouse|boyfriend|girlfriend|marriage|reply|message|contact|distant|friend|coworker|conflict|rejection|boundary)\b|break ?up|separat/i, output: /这段关系|关系.{0,10}(?:可靠|结束|变淡|疏远|破裂)|对方|分开|分手|不再在乎|抛下|伴侣|对象|婚姻|恋爱|\b(?:relationship|partner|spouse)\b|break ?up|separat|no longer care|abandon/i },
+    { name: "work_or_study", source: /工作|职场|公司|主管|老板|同事|岗位|简历|面试|求职|申请|学习|学校|老师|考试|作业|成绩|任务|截止|评价|评审|\b(?:work|job|company|manager|boss|coworker|role|interview|application|study|school|teacher|exam|assignment|grade|task|deadline|review)\b|\br[ée]sum[ée]\b/i, output: /工作|职场|公司|主管|老板|岗位|简历|面试|求职|学习|学校|老师|考试|作业|成绩|截止|评审|\b(?:work|job|company|manager|boss|role|interview|application|study|school|teacher|exam|assignment|grade|deadline|review)\b|\br[ée]sum[ée]\b/i },
+    { name: "family", source: /家庭|家人|父母|父亲|母亲|爸爸|妈妈|孩子|儿子|女儿|兄弟|姐妹|亲人|\b(?:family|parent|father|mother|child|son|daughter|brother|sister|relative)\b/i, output: /家庭|家人|父母|父亲|母亲|爸爸|妈妈|孩子|儿子|女儿|兄弟|姐妹|亲人|\b(?:family|parent|father|mother|child|son|daughter|brother|sister|relative)\b/i },
+    { name: "money_or_housing", source: /钱|收入|工资|债务|欠款|房租|住房|房子|搬家|经济|\b(?:money|income|salary|debt|rent|housing|home|financial)\b|move house/i, output: /钱|收入|工资|债务|欠款|房租|住房|房子|搬家|经济|\b(?:money|income|salary|debt|rent|housing|financial)\b|move house/i },
+    { name: "health_or_substance", source: /身体|健康|睡眠|失眠|药物|用药|饮酒|酒精|物质使用|疼痛|生病|\b(?:body|health|sleep|insomnia|medication|medicine|drinking|alcohol|substance|pain|illness)\b/i, output: /健康|睡眠|失眠|药物|用药|饮酒|酒精|物质使用|疼痛|生病|\b(?:health|sleep|insomnia|medication|medicine|drinking|alcohol|substance|pain|illness)\b/i }
+  ];
 
   const hasSafetyLanguage = (value) => safetyPatterns.some((pattern) => pattern.test(String(value || "")));
 
@@ -63,6 +70,12 @@
     return [...new Set(issues)];
   }
 
+  function ungroundedScenarioIssues(source, value) {
+    const sourceText = String(source || "");
+    const outputText = typeof value === "string" ? value : JSON.stringify(value || {});
+    return scenarioScopes.filter((scope) => !scope.source.test(sourceText) && scope.output.test(outputText)).map((scope) => scope.name);
+  }
+
   function metaphorIssues(value, { safety = false } = {}) {
     const text = String(value || "");
     const markers = text.match(metaphorMarker) || [];
@@ -75,5 +88,5 @@
     return [...new Set(issues)];
   }
 
-  return { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues };
+  return { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues, ungroundedScenarioIssues };
 });
