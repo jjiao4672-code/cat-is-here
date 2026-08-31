@@ -540,7 +540,7 @@ let interviewSummary = "";
       deepSynthesis.map = Object.fromEntries(Object.entries(deepSynthesis.map).map(([key, value]) => [key, safeVisible(value, key === "fact" || key === "unknown" || asked.has(key))]));
     }
     const map = deepSynthesis?.map;
-    $("#resultSummary").textContent = fallbackOffered ? "实时 AI 没有返回可用结果。固定内容还没有显示；由你决定是否继续查看标注清楚的合成示例。" : syntheticMap ? "这不是实时 AI 回答。它用固定模板整理了你刚才确认的回答。" : localMap ? "当前未连接到 AI 服务。这一版只根据你刚才的结构化回答整理，并明确标记为本地版；你可以继续使用，也可以稍后联网重新生成。" : awaitingMap ? "猫正在按线索、解释、感受、行动和结果整理这一件事。" : map && currentResult.type === "reflection" ? `猫只在描述这次情境：发生【${map.fact}】后，你解释为【${map.meaning}】，感到【${map.feeling}】，接着【${map.move}】。你可以修改或否定这张地图。` : currentResult.summary;
+    $("#resultSummary").textContent = fallbackOffered ? "猫这次没有整理出可用地图。固定内容还没有显示；由你决定是否继续查看标注清楚的合成示例。" : syntheticMap ? "这是固定模板整理的合成示例，不是根据本轮回答生成的地图。" : localMap ? "当前未连接到 AI 服务。这一版只根据你刚才的结构化回答整理，并明确标记为本地版；你可以继续使用，也可以稍后联网重新生成。" : awaitingMap ? "猫正在按线索、解释、感受、行动和结果整理这一件事。" : map && currentResult.type === "reflection" ? `猫只在描述这次情境：发生【${map.fact}】后，你解释为【${map.meaning}】，感到【${map.feeling}】，接着【${map.move}】。你可以修改或否定这张地图。` : currentResult.summary;
     $("#surfaceProblem").textContent = map ? map.fact : currentResult.pathway ? currentResult.pathway.trigger : (currentResult.evidence.length ? currentResult.evidence.join("；") : "这次没有生成普通心理结论。");
     $("#protectivePurpose").textContent = map ? map.meaning : currentResult.pathway ? currentResult.pathway.meaning : "尚未确认";
     $("#feelingResult").textContent = map ? map.feeling : currentResult.pathway?.feeling || "尚未确认";
@@ -557,10 +557,10 @@ let interviewSummary = "";
     $("#clarityOutput").value = clarityAfter;
     [...$(".confirm-actions").querySelectorAll("button")].forEach((button) => button.classList.toggle("selected", button.dataset.feedback === feedback));
     const eligible = currentResult.type === "reflection";
-    $("#deepDiveLabel").textContent = syntheticMap ? "合成示例" : fallbackOffered ? "实时 AI 暂不可用" : localMap ? "本地问题地图 · 未联网" : "实时 AI";
+    $("#deepDiveLabel").textContent = syntheticMap ? "合成示例" : fallbackOffered ? "猫暂时没整理好" : localMap ? "本地问题地图 · 未联网" : "猫的整理";
     $("#deepDiveTitle").textContent = fallbackOffered ? "实时回答暂时不可用。要继续查看标注清楚的合成示例吗？" : syntheticMap ? "当前显示的是固定合成示例" : localMap ? "当前未连接到 AI 服务" : "稍等，猫在整理刚才说到的事";
-    $("#deepDiveDescription").textContent = fallbackOffered ? `${mapRequestError || "模型、API 或网络请求失败"}。不会自动切换。` : syntheticMap ? "你可以继续核对，也可以重试实时 AI。" : localMap ? "本地版已经生成，可以继续核对。AI 服务恢复后，可以随时联网重新生成。" : "基础安全判断已完成；本轮输入正在用于生成可修改的地图。";
-    $("#deepDiveButton").textContent = fallbackOffered || syntheticMap || localMap ? "重试实时 AI" : "正在生成……";
+    $("#deepDiveDescription").textContent = fallbackOffered ? `${mapRequestError || "模型、API 或网络请求失败"}。不会自动切换。` : syntheticMap ? "你可以继续核对，也可以请猫再试一次。" : localMap ? "本地版已经生成，可以继续核对。联网服务恢复后，可以随时请猫重新整理。" : "基础安全判断已完成；猫正在把本轮输入整理成可修改的地图。";
+    $("#deepDiveButton").textContent = fallbackOffered || syntheticMap || localMap ? "请猫再试一次" : "猫正在整理……";
     $("#deepDiveButton").disabled = loadingMap;
     $("#skipDeepButton").textContent = "继续查看合成示例";
     $("#skipDeepButton").classList.toggle("hidden", !fallbackOffered);
@@ -741,7 +741,7 @@ let interviewSummary = "";
     $("#questionPanel").classList.remove("hidden");
     $("#questionKicker").textContent = COMPETITION_EN ? "CORRECTABLE UNDERSTANDING" : "可以纠正的理解";
     $("#questionTitle").textContent = COMPETITION_EN ? "The full story is not clear yet, but you may already have guessed an outcome. Did Cat hear that right?" : "事情还没说清楚时，你好像先猜了一个结果。猫理解得对吗？";
-    $("#questionHint").textContent = COMPETITION_EN ? "This is a guess, not a fact. Correct it before Live AI builds the map." : "这只是猜测，不是事实。进入实时 AI 地图前，你可以纠正。";
+    $("#questionHint").textContent = COMPETITION_EN ? "This is a guess, not a fact. Correct it before Cat organizes the map." : "这只是猜测，不是事实。请猫整理地图前，你可以纠正。";
     $("#stepLabel").textContent = COMPETITION_EN ? "INPUT · UNDERSTANDING CHECK" : "输入 · 理解确认";
     $("#selectedCount").textContent = COMPETITION_EN ? "Choose one, or write a correction" : "选择一项，或写下纠正";
     $("#optionsGrid").innerHTML = "";
@@ -763,7 +763,7 @@ let interviewSummary = "";
     freeNote.value = "";
     $("#backButton").disabled = false;
     $("#backButton span").textContent = COMPETITION_EN ? "Back" : "返回";
-    $("#nextButton span").textContent = COMPETITION_EN ? "Generate Problem Map with Live AI" : "用实时 AI 生成问题地图";
+    $("#nextButton span").textContent = COMPETITION_EN ? "Ask Cat to organize the Problem Map" : "请猫整理问题地图";
   }
 
   function updateCompetitionStatus() {
@@ -776,8 +776,8 @@ let interviewSummary = "";
     });
     if (!COMPETITION_MODE) return;
     const status = COMPETITION_EN
-      ? mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No example shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`
-      : mapRequestState === "synthetic" ? "合成示例 · 不保存" : mapRequestState === "fallback-offered" ? "实时 AI 暂不可用 · 尚未显示兜底" : mapRequestState === "loading" ? "实时 AI · 正在生成" : `实时 AI · ${competitionInputSynthetic ? "合成示例输入" : "已编辑输入"} · 不保存`;
+      ? mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Cat could not finish · No example shown" : mapRequestState === "loading" ? "Cat is organizing" : `Cat · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`
+      : mapRequestState === "synthetic" ? "合成示例 · 不保存" : mapRequestState === "fallback-offered" ? "猫暂时没整理好 · 尚未显示兜底" : mapRequestState === "loading" ? "猫正在整理" : `猫 · ${competitionInputSynthetic ? "合成示例输入" : "已编辑输入"} · 不保存`;
     const navStatus = $("#demoNav span");
     const topStatus = $(".status-strip span");
     if (navStatus) navStatus.textContent = status;
@@ -788,7 +788,7 @@ let interviewSummary = "";
     if (!COMPETITION_EN) return;
     const set = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
     const aria = (selector, value) => { const node = $(selector); if (node) node.setAttribute("aria-label", value); };
-    const responseStatus = mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Live AI unavailable · No example shown" : mapRequestState === "loading" ? "Live AI · Generating" : `Live AI · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`;
+    const responseStatus = mapRequestState === "synthetic" ? "Synthetic example · Nothing saved" : mapRequestState === "fallback-offered" ? "Cat could not finish · No example shown" : mapRequestState === "loading" ? "Cat is organizing" : `Cat · ${competitionInputSynthetic ? "Example input" : "Edited input"} · Nothing saved`;
     document.documentElement.lang = "en";
     document.title = "Cat Is Here | Competition Demo";
     $(".landing-art").alt = "Cat waits behind a desk among sunlit plants";
@@ -856,33 +856,33 @@ let interviewSummary = "";
       $("#answerCoreCard").setAttribute("aria-label", "Current reflection structure");
       set("#resultPanel .result-step", "2 OF 4 · PROBLEM MAP");
       if (mapRequestState === "loading") {
-        set("#sceneLabel", "PROBLEM MAP · LIVE AI");
+        set("#sceneLabel", "PROBLEM MAP · CAT IS ORGANIZING");
         set("#heroTitle", "Cat is building an editable map.");
         set("#heroDescription", "The labeled synthetic input is being sent to the configured model.");
-        set("#stepLabel", "PROBLEM MAP · LIVE AI");
+        set("#stepLabel", "PROBLEM MAP · CAT IS ORGANIZING");
         set("#selectedCount", "Generating a correctable response");
-        set("#resultTitle", "Live AI is organizing this event");
+        set("#resultTitle", "Cat is organizing this event");
         set("#resultSummary", "Cat is separating the clue, interpretation, feeling, action, result, and what remains unknown.");
-        set("#deepDiveLabel", "LIVE AI");
+        set("#deepDiveLabel", "CAT'S NOTES");
         set("#deepDiveTitle", "Generating an editable Problem Map");
         set("#deepDiveDescription", "No fixed response is being shown.");
         set("#deepDiveButton", "Generating…");
         return;
       }
       if (mapRequestState === "fallback-offered") {
-        set("#sceneLabel", "PROBLEM MAP · LIVE AI UNAVAILABLE");
+        set("#sceneLabel", "PROBLEM MAP · CAT COULDN'T FINISH");
         set("#heroTitle", "The live response did not arrive.");
         set("#heroDescription", "No fixed output has been shown. You choose what happens next.");
         set("#stepLabel", "PROBLEM MAP · CHOOSE THE NEXT SOURCE");
-        set("#selectedCount", "Live AI unavailable");
+        set("#selectedCount", "Cat could not finish this map");
         set("#resultTitle", "Live response is unavailable. Continue with a labeled synthetic example?");
         set("#resultSummary", "The app will not switch sources silently.");
-        set("#deepDiveLabel", "LIVE AI UNAVAILABLE");
+        set("#deepDiveLabel", "CAT COULDN'T FINISH");
         set("#deepDiveTitle", "Live response is unavailable. Continue with a labeled synthetic example?");
         set("#deepDiveDescription", "The model, API, or network request failed. No fixed output has been shown.");
         set("#skipDeepButton", "Continue with synthetic example");
         set("#setupApiKeyButton", "Add API key");
-        set("#deepDiveButton", "Retry Live AI");
+        set("#deepDiveButton", "Ask Cat to try again");
         return;
       }
       if (!deepSynthesis) return;
@@ -890,12 +890,12 @@ let interviewSummary = "";
       set("#heroTitle", "Separate what happened from what it might mean.");
       set("#heroDescription", "You can change this map when you learn more.");
       set("#stepLabel", "PROBLEM MAP · 2 OF 4");
-      set("#selectedCount", mapRequestState === "synthetic" ? "Synthetic example · fixed template" : "Live AI · editable output");
+      set("#selectedCount", mapRequestState === "synthetic" ? "Synthetic example · fixed template" : "Cat's editable map");
       set("#resultPanel .result-step", "2 OF 4 · PROBLEM MAP");
       const defaultSyntheticInput = openingNote === COMPETITION_CASES[competitionCase].en;
       const exampleTitle = competitionCase === "job_search" ? "No reply ≠ a verdict on ability" : "A feared ending is not the same as a known ending";
       set("#resultTitle", mapRequestState === "synthetic" ? `Synthetic example · ${exampleTitle}` : defaultSyntheticInput ? exampleTitle : "One event, one guess you can change");
-      set("#resultSummary", mapRequestState === "synthetic" ? "This is not a Live AI response. A fixed template arranged the answers you confirmed." : `This map came from Live AI. What happened: ${deepSynthesis.map.fact} Change anything Cat misunderstood.`);
+      set("#resultSummary", mapRequestState === "synthetic" ? "This is a fixed synthetic example, not a map generated from this session." : `Cat organized this map from your answers. What happened: ${deepSynthesis.map.fact} Change anything Cat misunderstood.`);
       const coreLabels = ["What happened", "What I thought", "What I felt", "What I did or did not do", "What happened right away and later", "Cat's guess (you decide)", "Still unknown"];
       document.querySelectorAll("#answerCoreCard .result-grid span").forEach((node, index) => { node.textContent = coreLabels[index]; });
       set("#surfaceProblem", deepSynthesis.map.fact);
@@ -928,8 +928,8 @@ let interviewSummary = "";
       if (mapRequestState === "synthetic") {
         set("#deepDiveLabel", "SYNTHETIC EXAMPLE");
         set("#deepDiveTitle", "This is fixed synthetic output");
-        set("#deepDiveDescription", "It appeared only after your choice. Retry Live AI at any time.");
-        set("#deepDiveButton", "Retry Live AI");
+        set("#deepDiveDescription", "It appeared only after your choice. Ask Cat to try again at any time.");
+        set("#deepDiveButton", "Ask Cat to try again");
       }
       return;
     }
@@ -1120,7 +1120,7 @@ let interviewSummary = "";
     $("#resultPanel").classList.add("hidden");
     $("#questionPanel").classList.add("hidden");
     $("#followupPanel").classList.remove("hidden", "interview-error");
-    $("#followupKicker").textContent = COMPETITION_EN ? `LIVE AI · QUESTION ${Math.min(interviewRound + 1, interviewLimit)}` : `实时 AI · 第 ${Math.min(interviewRound + 1, interviewLimit)} 问`;
+    $("#followupKicker").textContent = COMPETITION_EN ? `CAT · QUESTION ${Math.min(interviewRound + 1, interviewLimit)}` : `猫的第 ${Math.min(interviewRound + 1, interviewLimit)} 问`;
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
     $("#followupBackButton span").textContent = COMPETITION_EN ? "Back" : "上一题";
     $("#followupReflection").textContent = COMPETITION_EN ? "Here is what Cat heard so far." : "猫先把你刚才说的放在这里。";
@@ -1135,12 +1135,12 @@ let interviewSummary = "";
 
   function renderInterviewFailure() {
     $("#followupPanel").classList.add("interview-error");
-    $("#followupKicker").textContent = COMPETITION_EN ? "LIVE AI UNAVAILABLE" : "实时 AI 暂不可用";
+    $("#followupKicker").textContent = COMPETITION_EN ? "CAT COULDN'T FINISH" : "猫这次没整理好";
     $("#followupReflection").textContent = COMPETITION_EN ? "No fixed question has been shown." : "尚未显示固定问题。";
     $("#followupTitle").textContent = COMPETITION_EN ? "Live response is unavailable. Continue with a labeled synthetic example?" : "实时回答暂时不可用。要继续查看标注清楚的合成示例吗？";
     $("#followupHint").textContent = COMPETITION_EN ? "The model, API, or network request failed. The app did not switch sources." : interviewFailure;
     const options = $("#followupOptions"); options.innerHTML = "";
-    const retry = document.createElement("button"); retry.type = "button"; retry.className = "followup-option"; retry.textContent = COMPETITION_EN ? "Retry Live AI" : "重试实时 AI"; retry.addEventListener("click", requestNextInterviewQuestion);
+    const retry = document.createElement("button"); retry.type = "button"; retry.className = "followup-option"; retry.textContent = COMPETITION_EN ? "Ask Cat to try again" : "请猫再试一次"; retry.addEventListener("click", requestNextInterviewQuestion);
     const fallback = document.createElement("button"); fallback.type = "button"; fallback.className = "followup-option"; fallback.textContent = COMPETITION_EN ? "Continue with synthetic example" : "继续查看合成示例"; fallback.addEventListener("click", () => { interviewSynthetic = true; mapRequestState = "synthetic"; renderInterviewQuestion(syntheticInterview(competitionCase, interviewRound + 1)); });
     options.append(retry, fallback);
     if (!HOSTED_COMPETITION) {
@@ -1243,7 +1243,7 @@ let interviewSummary = "";
     $("#resultPanel").classList.add("hidden");
     $("#questionPanel").classList.add("hidden");
     $("#followupPanel").classList.remove("hidden", "interview-error");
-    $("#followupKicker").textContent = factCheck ? (COMPETITION_EN ? "ONE SPECIFIC EVENT" : "先说具体一点") : interviewSynthetic ? (COMPETITION_EN ? `SYNTHETIC EXAMPLE · QUESTION ${interviewRound + 1}` : `合成示例 · 第 ${interviewRound + 1} 问`) : (COMPETITION_EN ? `LIVE AI · QUESTION ${interviewRound + 1}` : `实时 AI · 第 ${interviewRound + 1} 问`);
+    $("#followupKicker").textContent = factCheck ? (COMPETITION_EN ? "ONE SPECIFIC EVENT" : "先说具体一点") : interviewSynthetic ? (COMPETITION_EN ? `SYNTHETIC EXAMPLE · QUESTION ${interviewRound + 1}` : `合成示例 · 第 ${interviewRound + 1} 问`) : (COMPETITION_EN ? `CAT · QUESTION ${interviewRound + 1}` : `猫的第 ${interviewRound + 1} 问`);
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
     $("#followupBackButton span").textContent = COMPETITION_EN ? "Back" : "上一题";
     $("#followupReflection").textContent = safeVisible(question.reflection, true);
@@ -2635,7 +2635,7 @@ let interviewSummary = "";
       $("#confirmStatus").textContent = COMPETITION_EN ? `Cat changed ${deepUpdatedFields.length || 1} part. Check the map again.` : `猫改了${deepUpdatedFields.length || 1}处，你再看看。`;
       requestAnimationFrame(() => document.querySelector(".deep-map-field.just-updated textarea")?.focus());
     } catch (error) {
-      $("#confirmStatus").textContent = `${COMPETITION_EN ? "Live AI is unavailable. Your correction is still in this field" : "实时 AI 暂不可用。你的纠正仍留在输入框里"}：${error.message}`;
+      $("#confirmStatus").textContent = `${COMPETITION_EN ? "Cat could not update this yet. Your correction is still in this field" : "猫这次还没改好。你的纠正仍留在输入框里"}：${error.message}`;
     } finally { $("#applyMapCorrectionButton").disabled = false; }
   });
 
@@ -2681,7 +2681,7 @@ let interviewSummary = "";
     savedRecordId = null; activeCycle = null; await renderHistory(); await renderMemory(); reset();
   });
 
-  const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Live AI · Example input · Nothing saved" : "实时 AI · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · AI 联网地图"; $(".status-strip").append(localBadge);
+  const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Cat · Example input · Nothing saved" : "猫 · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · 猫联网整理地图"; $(".status-strip").append(localBadge);
   if (COMPETITION_MODE && !HOSTED_COMPETITION) fetch("/api/config/status").then((response) => response.ok ? response.json() : {}).then((status) => { HOSTED_COMPETITION = Boolean(status.hostedCompetition); updateCompetitionStatus(); }).catch(() => {});
   $("#enterDeskButton").addEventListener("click", () => enterDesk());
   if (DEMO_MODE) {

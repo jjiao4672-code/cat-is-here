@@ -60,6 +60,11 @@ test("a broad entry category cannot be promoted to a specific event by the clien
   assert.equal(rules.isSpecificEvent("昨天开会时，主管当众否定了我的方案。", false), false);
 });
 
+test("the generated map insight stays within the visible sentence limits", () => {
+  const insight = "猫看完了。发生“昨天收到一个没有达到预期的结果”时，你想到“我的准备可能还不够”。你感到“失落”，接着“停下来没有继续处理”。这个结果可能让原判断继续缺少新的现实核对。你看看像不像。";
+  assert.deepEqual(rules.summaryIssues(insight), []);
+});
+
 test("allows one explained everyday metaphor but rejects mixed imagery and personification", () => {
   assert.deepEqual(rules.metaphorIssues("猫整理完了，你看看像不像。"), []);
   assert.deepEqual(rules.metaphorIssues("像按了门铃，却没听见里面的声音。没人回应是真的，里面发生了什么还不知道。"), []);

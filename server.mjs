@@ -251,8 +251,8 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
     ? `Still unresolved: ${counterevidence || "what would weaken the judgment"}. Another possible explanation: ${alternative || "not yet known"}.`.slice(0, 220)
     : `仍待核对：${counterevidence || "什么会让原判断没那么确定"}。其他可能解释：${alternative || "还不知道"}。`.slice(0, 220);
   const insight = language === "en"
-    ? `Cat read what you wrote. When “${brief(cleanedMap.fact, 55)}” seemed to mean “${brief(cleanedMap.meaning, 58)}”, you felt “${brief(cleanedMap.feeling, 35)}” and then “${brief(cleanedMap.move, 45)}”. ${resultHeldBack ? "The result may have left that judgment with too little new evidence." : "The result adds one clue, but does not settle the judgment."} Does that fit?`
-    : `猫看完了。发生“${brief(cleanedMap.fact, 22)}”时，你把它理解为“${brief(cleanedMap.meaning, 20)}”，感到“${brief(cleanedMap.feeling, 12)}”，接着“${brief(cleanedMap.move, 20)}”。${resultHeldBack ? "这个结果可能让原判断继续缺少新的现实核对。" : "这个结果增加了一条线索，但还不能单独证明原判断。"}你看看像不像。`;
+    ? `Cat read what you wrote. “${brief(cleanedMap.fact, 55)}” seemed to mean “${brief(cleanedMap.meaning, 58)}”. You felt “${brief(cleanedMap.feeling, 35)}”. Then you “${brief(cleanedMap.move, 45)}”. ${resultHeldBack ? "The result may have left that judgment with too little new evidence." : "The result adds one clue, but does not settle the judgment."} Does that fit?`
+    : `猫看完了。发生“${brief(cleanedMap.fact, 22)}”时，你想到“${brief(cleanedMap.meaning, 20)}”。你感到“${brief(cleanedMap.feeling, 12)}”，接着“${brief(cleanedMap.move, 20)}”。${resultHeldBack ? "这个结果可能让原判断继续缺少新的现实核对。" : "这个结果增加了一条线索，但还不能单独证明原判断。"}你看看像不像。`;
   const qualityIssues = [...summaryIssues(insight), ...outputIssues(data), ...metaphorIssues(insight)];
   if (reportVoice.test(insight)) qualityIssues.push("report_voice");
   if (figurativeVoice.test(insight)) qualityIssues.push("figurative_voice");

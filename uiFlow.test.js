@@ -148,7 +148,7 @@ test("competition fallback is explicit and usable after live retries", () => {
   assert.match(script, /No fixed output has been shown/);
   assert.match(script, /mapRequestState = "synthetic"/);
   assert.match(script, /mapRequestState = "synthetic"/);
-  assert.match(script, /Retry Live AI/);
+  assert.match(script, /Ask Cat to try again/);
   assert.match(html, /id="setupApiKeyButton"[^>]*>添加 API 密钥</);
   assert.match(script, /setupApiKeyButton"\)\.addEventListener\("click", \(\) => \{ window\.location\.href = "\/api-setup\.html"/);
   assert.match(script, /setupApiKeyButton"\)\.classList\.toggle\("hidden", HOSTED_COMPETITION \|\| !COMPETITION_MODE \|\| !fallbackOffered\)/);
@@ -526,13 +526,16 @@ test("English competition copy stays conversational", () => {
   assert.match(script, /What small step could give you new information/);
   assert.match(script, /Save anything from this session/);
   assert.match(script, /A memory, message, or familiar situation came back/);
-  assert.match(script, /Live AI · Example input · Nothing saved/);
+  assert.match(script, /Cat · Example input · Nothing saved/);
   assert.match(script, /A GUESS YOU CAN CHANGE/);
   assert.match(script, /setAttribute\("aria-label", "Example input"\)/);
   assert.match(script, /Seven-day distress and daily-life impact/);
   assert.match(script, /Close check-in history/);
   assert.match(html, /id="competitionExamples" role="group"/);
-  assert.match(server, /Cat read what you wrote\. When/);
+  assert.match(server, /Cat read what you wrote\. “/);
+  assert.match(script, /猫的第 \$\{interviewRound \+ 1\} 问/);
+  assert.match(script, /请猫整理问题地图/);
+  assert.doesNotMatch(script, /实时 AI · 第|用实时 AI 生成问题地图|重试实时 AI|实时 AI 暂不可用|LIVE AI · QUESTION|Generate Problem Map with Live AI|Retry Live AI/);
   assert.match(server, /does \(\?:this\|that\)/);
   assert.match(server, /Cat has the event and your feeling[\s\S]*What did this seem to mean about you or the situation/);
   assert.doesNotMatch(server, /reflection: copy\[0\], question: copy\[0\]/);
