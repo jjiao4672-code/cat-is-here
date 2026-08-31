@@ -2258,7 +2258,7 @@ let interviewSummary = "";
         }
         const optionLabel = question.options.find((option) => option.id === eventChoice)?.label || "";
         competitionInputSynthetic = COMPETITION_MODE && [COMPETITION_CASES.relationship[COMPETITION_EN ? "en" : "zh"], COMPETITION_CASES.job_search[COMPETITION_EN ? "en" : "zh"]].includes(note);
-        beginEventInterview(eventChoice, note || optionLabel, Boolean(note));
+        beginEventInterview(eventChoice, note || optionLabel, Boolean(note) && !(competitionInputSynthetic && competitionCase === "relationship"));
         return;
       }
       const allowsNote = question && !["CONSENT_01", "NEED_01", "GROUND_01"].includes(question.id) && !question.id.startsWith("SAFE_");

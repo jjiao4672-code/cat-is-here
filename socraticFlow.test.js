@@ -9,7 +9,7 @@ const css = fs.readFileSync("styles.css", "utf8");
 
 test("entry accepts an option, text, or both and keeps text primary", () => {
   assert.match(script, /if \(!eventChoice && !note\)/);
-  assert.match(script, /beginEventInterview\(eventChoice, note \|\| optionLabel, Boolean\(note\)\)/);
+  assert.match(script, /beginEventInterview\(eventChoice, note \|\| optionLabel, Boolean\(note\) && !\(competitionInputSynthetic && competitionCase === "relationship"\)\)/);
   assert.match(script, /eventIsSpecific: openingWasTyped/);
   assert.match(script, /state\.answers\.ENTRY_01 = eventChoice \? \[eventChoice\] : \[inferEntry\(openingNote\)\]/);
   assert.match(html, /选一个最接近的，也可以直接写|id="freeNote"/);
