@@ -156,6 +156,11 @@ test("competition fallback is explicit and usable after live retries", () => {
   assert.match(script, /setupApiKeyStatusLink", "#setupApiKeyNavLink"/);
   assert.match(script, /followup-api-link/);
   assert.match(script, /if \(!HOSTED_COMPETITION\)/);
+  assert.match(script, /fetch\("\/api\/config\/status"\)[\s\S]*status\.hostedCompetition/);
+  assert.match(script, /error\.status = response\.status/);
+  assert.match(script, /error\.retryAfter = Number\(response\.headers\.get\("retry-after"\)\)/);
+  assert.match(script, /error\?\.status === 429[\s\S]*请求次数暂时达到上限/);
+  assert.match(server, /createRequestGate\(\{ limit: hostedCompetition \? 120 : 40 \}\)/);
   const requestStart = script.indexOf("async function requestAiMap");
   const catchStart = script.indexOf("} catch (error) {", requestStart);
   const failureBranch = script.slice(catchStart, script.indexOf("renderResult();", catchStart));

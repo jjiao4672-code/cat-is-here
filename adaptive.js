@@ -6,7 +6,7 @@
   const $ = (selector) => document.querySelector(selector);
   const params = new URLSearchParams(location.search);
   const COMPETITION_MODE = params.get("demo") === "competition";
-  const HOSTED_COMPETITION = COMPETITION_MODE && ["1", "true", "yes"].includes(String(params.get("hosted") || "").toLowerCase());
+  let HOSTED_COMPETITION = COMPETITION_MODE && ["1", "true", "yes"].includes(String(params.get("hosted") || "").toLowerCase());
   const COMPETITION_EN = COMPETITION_MODE && params.get("lang") === "en";
   const RELATIONSHIP_DEMO = params.get("demo") === "relationship";
   const DEMO_MODE = RELATIONSHIP_DEMO || COMPETITION_MODE;
@@ -488,7 +488,7 @@ let interviewSummary = "";
       mapRequestState = "ready";
     } catch (error) {
       if (attempt < 2 && /校验|JSON|格式|缺少有效来源|invalid|validation/i.test(String(error.message))) return requestAiMap({ attempt: attempt + 1 });
-      mapRequestError = classifyApiError(error.message);
+      mapRequestError = classifyApiError(error);
       deepSynthesis = null;
       deepDiveEnhanced = false;
       mapRequestState = "fallback-offered";
@@ -496,8 +496,12 @@ let interviewSummary = "";
     renderResult();
   }
 
-  function classifyApiError(message = "") {
-    const text = String(message);
+  function classifyApiError(error = "") {
+    const text = String(error?.message || error);
+    if (error?.status === 429) {
+      const minutes = Math.max(1, Math.ceil(Number(error.retryAfter || 60) / 60));
+      return COMPETITION_EN ? `Too many requests from this connection. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}. Your answers are still here.` : `这条网络的请求次数暂时达到上限，请约 ${minutes} 分钟后再试。刚才的回答还在`;
+    }
     if (/未配置|未配置|密钥|api.?key|401|403|unauthoriz/i.test(text)) return COMPETITION_EN ? "The server has no usable AI key." : "服务器尚未配置可用的 AI 密钥。";
     if (/地图字段|缺少有效来源|校验|JSON|格式|invalid|validation/i.test(text)) return COMPETITION_EN ? "The AI replied, but its map was not reliable enough to show." : "AI 已返回内容，但问题地图校验未通过，暂不显示。";
     return COMPETITION_EN ? "The AI request could not be completed." : "AI 请求没有完成，可能是网络或服务暂时不可用。";
@@ -588,7 +592,12 @@ let interviewSummary = "";
     if (!hasNetworkConsent()) throw new Error("请先在边界说明中确认联网范围");
     const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "联网回答暂时不可用");
+    if (!response.ok) {
+      const error = new Error(data.error || "联网回答暂时不可用");
+      error.status = response.status;
+      error.retryAfter = Number(response.headers.get("retry-after")) || 0;
+      throw error;
+    }
     return data;
   }
 
@@ -1172,7 +1181,7 @@ let interviewSummary = "";
       renderInterviewQuestion(data);
     } catch (error) {
       if (!retry && /校验|JSON|格式|下一问|invalid|validation/i.test(String(error.message))) return requestNextInterviewQuestion({ retry: true });
-      interviewFailure = classifyApiError(error.message);
+      interviewFailure = classifyApiError(error);
       mapRequestState = "fallback-offered";
       renderInterviewFailure();
     }
@@ -2671,6 +2680,7 @@ let interviewSummary = "";
   });
 
   const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Live AI · Example input · Nothing saved" : "实时 AI · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · AI 联网地图"; $(".status-strip").append(localBadge);
+  if (COMPETITION_MODE && !HOSTED_COMPETITION) fetch("/api/config/status").then((response) => response.ok ? response.json() : {}).then((status) => { HOSTED_COMPETITION = Boolean(status.hostedCompetition); updateCompetitionStatus(); }).catch(() => {});
   $("#enterDeskButton").addEventListener("click", () => enterDesk());
   if (DEMO_MODE) {
     if (!COMPETITION_MODE || params.has("view")) enterDesk({ animate: false });

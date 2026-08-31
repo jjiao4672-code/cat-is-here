@@ -14,7 +14,7 @@ let model = process.env.OPENAI_MODEL || "deepseek-v4-pro";
 const root = dirname(fileURLToPath(import.meta.url));
 const { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues } = qualityRules;
 const { createRequestGate } = requestGate;
-const takeClientRequest = createRequestGate();
+const takeClientRequest = createRequestGate({ limit: hostedCompetition ? 120 : 40 });
 const takeGlobalRequest = createRequestGate({ limit: 500, maxKeys: 1 });
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".ttf": "font/ttf", ".json": "application/json; charset=utf-8" };
 
