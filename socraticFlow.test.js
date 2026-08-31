@@ -79,6 +79,11 @@ test("user claims stay grounded in typed or confirmed answers", () => {
   assert.doesNotMatch(server.match(/function fallbackNextQuestion[\s\S]*?\n}/)?.[0] || "", /再次被拒绝或发生冲突|More rejection or conflict/);
 });
 
+test("a relationship event cannot become an unsupported judgment about the self", () => {
+  assert.match(server, /const unsupportedSelfFocus =/);
+  assert.match(server, /用户没有把这件事归因于自己，不能把下一问引向自我评价/);
+});
+
 test("secondary meaning probes cannot replace the user's main interpretation", () => {
   assert.match(server, /const isCoreFieldAnswer = .*secondaryMeaningModes\.has/);
   assert.match(server, /depthProbeModes = \["evidence", "counterevidence", "alternative", "protective_purpose"\]/);

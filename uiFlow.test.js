@@ -168,6 +168,12 @@ test("competition fallback is explicit and usable after live retries", () => {
   assert.doesNotMatch(failureBranch, /competitionSynthesis|mapRequestState = "synthetic"/);
 });
 
+test("map generation retries once on the server before showing a failure", () => {
+  assert.match(server, /for \(let synthesisAttempt = 0; synthesisAttempt < 2; synthesisAttempt \+= 1\)/);
+  assert.match(server, /if \(!synthesis\) throw synthesisError/);
+  assert.doesNotMatch(script, /requestAiMap\(\{ attempt:/);
+});
+
 test("competition presets show two distinct mechanisms without promising an ideal outcome", () => {
   const demoScript = fs.readFileSync("DEMO_SCRIPT.md", "utf8");
   assert.match(script, /I feel like we've grown more distant lately[\s\S]*have not brought it up/);
@@ -184,6 +190,10 @@ test("competition presets show two distinct mechanisms without promising an idea
   assert.match(demoScript, /cannot go beyond eight[\s\S]*summary screen/);
   assert.ok(demoScript.indexOf("choose Relationship") < demoScript.indexOf("Job search example"));
   assert.doesNotMatch(`${script}\n${demoScript}`, /you have become yourself|你已经成为了你自己/i);
+});
+
+test("reset clears the selected competition example", () => {
+  assert.match(script, /function reset\(\) \{[\s\S]*competitionCase = "relationship";[\s\S]*querySelectorAll\("\[data-example-case\]"\)\.forEach\(\(button\) => button\.setAttribute\("aria-pressed", "false"\)\)/);
 });
 
 test("How Cat uses AI states the real normal-mode data boundary", () => {

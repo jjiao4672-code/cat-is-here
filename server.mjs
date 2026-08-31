@@ -170,6 +170,9 @@ function validateNextQuestion(data, context = {}) {
     id: cleanVisible(item?.id || `option_${index + 1}`, "选项 ID", 32),
     label: cleanVisible(item?.label, `第 ${index + 1} 个选项`, 80)
   }));
+  const expressedSelfEvaluation = /(?:我|自己).{0,12}(?:做错|有问题|哪里不对|不够好|能力不行|导致|让(?:他|她|对方).{0,8}(?:不想|不愿))|I.{0,16}(?:did something wrong|am the problem|made (?:them|him|her))/i;
+  const unsupportedSelfFocus = /(?:怎么|如何)(?:看待|评价|判断)(?:你)?自己|你怎么看自己|我.{0,10}(?:哪里|是不是).{0,10}(?:让|使|导致)(?:他|她|对方)|(?:what|how).{0,12}(?:think|say|mean).{0,8}about (?:you|yourself)|something about me made (?:them|him|her)/i;
+  if (!expressedSelfEvaluation.test(sourceText) && unsupportedSelfFocus.test(JSON.stringify({ reflection, question, options }))) throw new Error("用户没有把这件事归因于自己，不能把下一问引向自我评价");
   const ungroundedScenarios = ungroundedScenarioIssues(sourceText, { reflection, question, options });
   if (ungroundedScenarios.length) throw new Error(`用户没有提到这些场景，不能加入问题或选项：${ungroundedScenarios.join(",")}`);
   if (!selfWorthPattern.test(sourceText) && selfWorthPattern.test(JSON.stringify({ reflection, question, options }))) throw new Error("用户没有表达自我否定，不能替用户加入这一判断");
@@ -430,7 +433,16 @@ ${catLiteraryStyle}
 输出语言：${outputLanguage}
 任务：综合“${theme}”主题，但保留多个解释。基础题结构化答案：${JSON.stringify(body.stateAnswers || {})}。基础整理结果：${JSON.stringify(body.result)}。用户补充：${JSON.stringify(body.notes || {})}。入口描述：${JSON.stringify(body.note || "")}。补充问答：${JSON.stringify(body.answers || [])}。当前地图（修订时使用）：${JSON.stringify(body.currentMap || {})}。
 输出一张可由用户修改或否定的单事件问题地图，不要把答案逐项抄写成清单。固定顺序仍是：发生了什么 → 我当时怎么想 → 我有什么感受 → 我做了什么或没做什么 → 结果怎样。meaning 写用户在这件事中的判断，不把它写成事实；result 在忠实保留用户回答的基础上，指出判断如何影响行动、行动是否让判断继续缺少现实检验，形成单事件内的循环。主线之后才是待验证猜测和未知：hypothesis 只根据 protective_purpose 回答，说明这个反应“可能”暂时帮用户避开什么或完成什么；如果用户否认保护作用，就保留否定，不强行解释。unknown 汇总 counterevidence、alternative 和仍需现实区分的部分。用户给出的依据、反例、替代解释和保护作用是：${JSON.stringify(probeAnswers)}。每个非缺失字段都必须在 mapSources 中引用以下真实来源 ID：${JSON.stringify(sourceRefs)}。没有问到的字段写“还没说到”（英文 Not asked yet）；已经问过但用户不知道或现实不能确定的字段写“还不知道”（英文 Not yet known）；“没有明显感受”和“没有采取行动”是有效回答，不能写成缺失。不得用 undefined、null、空白、标点或模板占位符。hypothesis 必须包含“可能”“也许”“待验证”“尚不能确定”或对应英文；不得追溯童年、原生家庭、依恋类型、人格、疾病或潜意识，不得诊断、读心或替第三方下结论。用户明确说出的事实和感受直接承认，不虚构隐藏情绪。insight 用 2-3 个自然短句，指出这次“事实—判断—行动—结果”的连接，再请用户判断像不像；不要只按字段复述。concepts 返回空数组。experiments 只给 1 个备用建议，且只有用户想不到动作时才展示：低成本、可停止、完全属于用户可控制的行为，不秘密试探或操纵他人。动作必须取得一条能区分原判断和 alternative 的现实信息，目标是增加判断依据，不是证明用户够好，也不把他人的回应当作用户价值。关系情境在安全时优先使用清楚、不指责的沟通。若当下不能执行，可以先完成准备，但必须同时写清具体执行时间，不能停在“写草稿但不发送”。只返回 JSON：{"insight":"...","map":{"fact":"...","meaning":"...","feeling":"...","move":"...","result":"当下：……；后来：……；循环：……","hypothesis":"可能……，由你判断","unknown":"反例、替代解释和待验证部分"},"mapSources":{"fact":["ENTRY_01"],"meaning":["ROUND_1"],"feeling":["ROUND_2"],"move":["ROUND_3"],"result":["ROUND_4"],"hypothesis":["ROUND_8"],"unknown":["ROUND_3","ROUND_4"]},"alternatives":["用户提出的替代解释"],"evidenceGaps":["仍需核对的事实"],"concepts":[],"experiments":[{"id":"...","title":"...","prediction":"...","action":"第一步：...","observableOutcome":"观察能区分至少两种解释的事实；记录……","continueCondition":"……时继续","fallback":"……时停止或缩小","resultMeaning":"不同结果分别支持、削弱或仍无法区分什么","needsPattern":false}]}`;
-      return send(res, 200, await askValidated(prompt, (data) => validateSynthesis(data, sourceRefs, body.language, sourceByField, sourceValuesByField, probeAnswers)));
+      let synthesis;
+      let synthesisError;
+      for (let synthesisAttempt = 0; synthesisAttempt < 2; synthesisAttempt += 1) {
+        try {
+          synthesis = await askValidated(prompt, (data) => validateSynthesis(data, sourceRefs, body.language, sourceByField, sourceValuesByField, probeAnswers));
+          break;
+        } catch (error) { synthesisError = error; }
+      }
+      if (!synthesis) throw synthesisError;
+      return send(res, 200, synthesis);
     }
     if (req.url === "/api/cycle/closing-feedback") {
       const text = JSON.stringify({ cycle: body.cycle || {}, checkins: body.checkins || [] });

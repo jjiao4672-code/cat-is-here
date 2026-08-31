@@ -458,7 +458,7 @@ let interviewSummary = "";
     await requestAiMap();
   }
 
-  async function requestAiMap({ attempt = 0 } = {}) {
+  async function requestAiMap() {
     mapRequestState = "loading";
     mapRequestError = "";
     renderResult();
@@ -487,7 +487,6 @@ let interviewSummary = "";
       deepDiveEnhanced = true;
       mapRequestState = "ready";
     } catch (error) {
-      if (attempt < 2 && /校验|JSON|格式|缺少有效来源|invalid|validation/i.test(String(error.message))) return requestAiMap({ attempt: attempt + 1 });
       mapRequestError = classifyApiError(error);
       deepSynthesis = null;
       deepDiveEnhanced = false;
@@ -2251,6 +2250,7 @@ let interviewSummary = "";
 
   function reset() {
     openingWasTyped = false;
+    competitionCase = "relationship";
     state = createAssessment(); selected = []; currentResult = null; openingNote = ""; answerNotes = {}; deepQuestions = []; deepAnswers = []; deepIndex = 0; deepSynthesis = null; deepDiveEnhanced = false; deepDiveDismissed = false; deepUpdatedFields = []; deepUpdateSummary = ""; mapRequestState = "idle"; mapRequestError = ""; feedback = null; savedRecordId = null; selectedExperiment = null; selectedExperimentOriginal = null; confusionStart = 5; clarityAfter = 5; editingCycleExperiment = false; rememberForCat = false; similarityDismissed = false; pendingSimilarRecord = null; sessionCheckins = []; interviewRound = 0; interviewSynthetic = false; interviewPartial = false; interviewFailure = ""; interviewQuestion = null; interviewSummary = ""; interviewSummaryConfirmed = false; cognitiveUpdate = ""; actionOutcome = ""; competitionInputSynthetic = false;
     $("#resultPanel").classList.add("hidden", "crisis-mode");
     $("#deskStatePanel").classList.add("hidden");
@@ -2261,6 +2261,7 @@ let interviewSummary = "";
     $("#deskOpenJournalButton").hidden = false;
     $("#resetButton").textContent = "重新开始";
     $("#freeNote").value = "";
+    document.querySelectorAll("[data-example-case]").forEach((button) => button.setAttribute("aria-pressed", "false"));
     renderQuestion();
     if (COMPETITION_EN) applyCompetitionCopy("question");
   }
