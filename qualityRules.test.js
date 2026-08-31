@@ -53,6 +53,13 @@ test("rejects scenario details that the user never introduced", () => {
   assert.deepEqual(rules.ungroundedScenarioIssues("最近工作截止期很多", "这项工作让你怎么理解这段处境？"), []);
 });
 
+test("a broad entry category cannot be promoted to a specific event by the client", () => {
+  assert.equal(rules.isSpecificEvent("发生了冲突、拒绝、分离或边界摩擦", true), false);
+  assert.equal(rules.isSpecificEvent("A major change, loss, or transition", true), false);
+  assert.equal(rules.isSpecificEvent("昨天开会时，主管当众否定了我的方案。", true), true);
+  assert.equal(rules.isSpecificEvent("昨天开会时，主管当众否定了我的方案。", false), false);
+});
+
 test("allows one explained everyday metaphor but rejects mixed imagery and personification", () => {
   assert.deepEqual(rules.metaphorIssues("猫整理完了，你看看像不像。"), []);
   assert.deepEqual(rules.metaphorIssues("像按了门铃，却没听见里面的声音。没人回应是真的，里面发生了什么还不知道。"), []);

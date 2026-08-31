@@ -21,6 +21,7 @@ test("the category entry and concrete-event gate ask two different things", () =
   assert.match(script, /先选一个大致类别；如果已经想到具体事情，也可以直接写/);
   assert.match(script, /eventIsSpecific: openingWasTyped/);
   assert.match(server, /最近哪一件事让你开始难受/);
+  assert.match(server, /isSpecificEvent\(eventText, body\.eventIsSpecific\)/);
 });
 
 test("each live round depends on confirmed prior answers and returns one question", () => {

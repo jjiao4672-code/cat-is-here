@@ -35,6 +35,10 @@
     { name: "money_or_housing", source: /钱|收入|工资|债务|欠款|房租|住房|房子|搬家|经济|\b(?:money|income|salary|debt|rent|housing|home|financial)\b|move house/i, output: /钱|收入|工资|债务|欠款|房租|住房|房子|搬家|经济|\b(?:money|income|salary|debt|rent|housing|financial)\b|move house/i },
     { name: "health_or_substance", source: /身体|健康|睡眠|失眠|药物|用药|饮酒|酒精|物质使用|疼痛|生病|\b(?:body|health|sleep|insomnia|medication|medicine|drinking|alcohol|substance|pain|illness)\b/i, output: /健康|睡眠|失眠|药物|用药|饮酒|酒精|物质使用|疼痛|生病|\b(?:health|sleep|insomnia|medication|medicine|drinking|alcohol|substance|pain|illness)\b/i }
   ];
+  const entryCategoryTexts = new Set([
+    "某个人的回应、态度或关系发生了变化", "发生了冲突、拒绝、分离或边界摩擦", "经历了重大变化、失落或身份转换", "面对任务、截止期、评价或不确定要求", "钱、住房、工作、学习或照护出现压力", "身体、睡眠、药物、饮酒或物质使用发生变化", "一段记忆、消息或相似场景突然勾起反应", "没有明显事件，难受像是自己慢慢升起来", "我暂时想不起具体发生了什么",
+    "Something changed in a relationship or response", "A conflict, rejection, separation, or boundary issue", "A major change, loss, or transition", "A task, deadline, review, or evaluation", "Pressure from money, housing, work, study, or caregiving", "A change in my body, sleep, medication, drinking, or substance use", "A memory, message, or familiar situation came back", "No single event stands out", "I can’t recall yet"
+  ]);
 
   const hasSafetyLanguage = (value) => safetyPatterns.some((pattern) => pattern.test(String(value || "")));
 
@@ -76,6 +80,11 @@
     return scenarioScopes.filter((scope) => !scope.source.test(sourceText) && scope.output.test(outputText)).map((scope) => scope.name);
   }
 
+  function isSpecificEvent(value, claimedSpecific = false) {
+    const text = String(value || "").trim();
+    return Boolean(claimedSpecific && text && !entryCategoryTexts.has(text));
+  }
+
   function metaphorIssues(value, { safety = false } = {}) {
     const text = String(value || "");
     const markers = text.match(metaphorMarker) || [];
@@ -88,5 +97,5 @@
     return [...new Set(issues)];
   }
 
-  return { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues, ungroundedScenarioIssues };
+  return { hasSafetyLanguage, redactDirectIdentifiers, summaryIssues, outputIssues, metaphorIssues, ungroundedScenarioIssues, isSpecificEvent };
 });
