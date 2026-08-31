@@ -63,8 +63,8 @@ test("the confirmed map hands off to an experiment on the desk", () => {
 
 test("experiment eligibility follows the visible edited map", () => {
   assert.match(script, /function mapCanExperiment\(map = document\.querySelector\("\[data-map-key\]"\) \? editedMap\(\) : deepSynthesis\?\.map\)/);
-  assert.match(script, /input\.addEventListener\("input", \(\) => \{ \$\("#toExperimentButton"\)\.disabled = feedback !== "很像" \|\| !mapCanExperiment\(\); \}\)/);
-  assert.match(script, /if \(!feedback \|\| !mapCanExperiment\(editedMap\(\)\)\) return/);
+  assert.match(script, /input\.addEventListener\("input", \(\) => \{ \$\("#toExperimentButton"\)\.disabled = !feedbackAllowsExperiment\(\) \|\| !mapCanExperiment\(\); \}\)/);
+  assert.match(script, /if \(!feedbackAllowsExperiment\(\) \|\| !mapCanExperiment\(editedMap\(\)\)\) return/);
 });
 
 test("visible branding uses 猫在 and the proper name Cat Is Here", () => {

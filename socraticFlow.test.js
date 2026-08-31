@@ -161,11 +161,21 @@ test("the Problem Map is one editable chain and corrections return for confirmat
 });
 
 test("an experiment starts only after confirmation and begins with the user's action", () => {
-  assert.match(script, /feedback !== "很像" \|\| !mapCanExperiment/);
+  assert.match(script, /const feedbackAllowsExperiment = \(\) => \["很像", "有一点像"\]\.includes\(feedback\)/);
+  assert.match(script, /!feedbackAllowsExperiment\(\) \|\| !mapCanExperiment/);
   assert.match(html, /如果只做一件很小的事/);
   assert.match(html, /id="experimentProposal"[\s\S]*id="showCatSuggestionButton"/);
   assert.match(script, /showCatSuggestionButton[\s\S]*options\.classList\.remove\("hidden"\)/);
   assert.match(script, /dependsOnOther/);
+});
+
+test("the map adds a grounded Adlerian reading and bridges the guess to an experiment", () => {
+  for (const id of ["catTemporaryUnderstanding", "adlerPerspectiveTitle", "adlerPerspectiveText", "adlerPerspectiveBoundary", "experimentBridge"]) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(server, /const adlerAnalysis = protectivePurpose/);
+  assert.match(server, /title: "行为的方向"/);
+  assert.match(server, /title: "主观意义"/);
+  assert.match(server, /不能证明隐藏动机，也不是对你人格的判断/);
+  assert.match(script, /这目前只是猫的猜想。要是你觉得和自己的经历有一点像，我们可以一起想一个小实验/);
 });
 
 test("action routing covers now, todo, not done, and shrinking", () => {

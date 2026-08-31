@@ -245,6 +245,13 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
       ? `${brief(sourceValuesByField.result, 105)}. ${resultHeldBack ? `That response produced no new check of “${brief(sourceValuesByField.meaning, 65)}”, so the judgment may keep feeling true.` : `This is one piece of real-world information, but it does not by itself prove “${brief(sourceValuesByField.meaning, 65)}”.`}`.slice(0, 220)
       : `${brief(sourceValuesByField.result, 52)}。${resultHeldBack ? `这个反应没有带来能核对“${brief(sourceValuesByField.meaning, 34)}”的新事实，所以原判断可能继续显得很真。` : `这是一条现实信息，但还不能单独证明“${brief(sourceValuesByField.meaning, 34)}”。`}`.slice(0, 220);
   }
+  const adlerAnalysis = protectivePurpose && !missingMapValue.test(protectivePurpose) && !deniesProtection
+    ? english
+      ? { title: "Direction of the response", explanation: `An Adlerian lens asks what this response may have been moving toward. You then “${brief(cleanedMap.move, 45)}”. It may briefly have helped you “${brief(protectivePurpose, 65)}”.`, evidence: "This comes from what you said about your action and its possible use.", uncertainty: "It does not prove a hidden motive or a fixed personality." }
+      : { title: "行为的方向", explanation: `阿德勒视角会问：这个反应当时可能朝向什么。你后来“${brief(cleanedMap.move, 22)}”。它也许暂时帮助你“${brief(protectivePurpose, 32)}”。`, evidence: "这是根据你对行动和可能作用的回答整理的。", uncertainty: "它不能证明隐藏动机，也不是对你人格的判断。" }
+    : english
+      ? { title: "Subjective meaning", explanation: `An Adlerian lens separates the event from the meaning given to it. “${brief(cleanedMap.fact, 55)}” is the event. “${brief(cleanedMap.meaning, 58)}” is how it looked to you then, and that meaning connected with what you did next.`, evidence: "This comes from the event, judgment, and action you described.", uncertainty: "It is one current reading, not a fact or a fixed personality." }
+      : { title: "主观意义", explanation: `阿德勒视角会把事件和你赋予它的意义分开。“${brief(cleanedMap.fact, 22)}”是发生的事。“${brief(cleanedMap.meaning, 24)}”是你当时的理解，这个理解又和接下来的行动连在一起。`, evidence: "这是根据你说的事件、判断和行动整理的。", uncertainty: "这只是目前的一种读法，不是事实，也不是对你人格的判断。" };
   const counterevidence = probe("counterevidence");
   const alternative = probe("alternative");
   if (counterevidence || alternative) cleanedMap.unknown = english
@@ -266,6 +273,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   }));
   const synthesis = {
     insight,
+    adlerAnalysis,
     map: cleanedMap,
     mapSources,
     alternatives: [...new Set([alternative, ...(Array.isArray(data.alternatives) ? data.alternatives : [])].filter(Boolean).map((item) => String(item).slice(0, 160)))].slice(0, 3),

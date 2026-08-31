@@ -302,7 +302,7 @@ let interviewSummary = "";
     deepUpdateSummary = "";
     currentResult = record.result;
     const pathway = record.result?.pathway || {};
-    deepSynthesis = { insight: record.insight, map: { protectedValue: pathway.protectedValue || pathway.task || "尚未确认", direction: pathway.direction || "尚未确认", ...(record.map || {}) }, mapSources: record.mapSources || {}, evidenceGaps: record.evidenceGaps || [], alternatives: record.alternatives, concepts: record.concepts, experiments: (record.experiments || []).map(normalizeExperiment), experiment: record.experiment };
+    deepSynthesis = { insight: record.insight, adlerAnalysis: record.adlerAnalysis, map: { protectedValue: pathway.protectedValue || pathway.task || "尚未确认", direction: pathway.direction || "尚未确认", ...(record.map || {}) }, mapSources: record.mapSources || {}, evidenceGaps: record.evidenceGaps || [], alternatives: record.alternatives, concepts: record.concepts, experiments: (record.experiments || []).map(normalizeExperiment), experiment: record.experiment };
     selectedExperiment = record.selectedExperiment ? normalizeExperiment(record.selectedExperiment) : null;
     selectedExperimentOriginal = record.selectedExperiment?.aiOriginal ? normalizeExperiment(record.selectedExperiment.aiOriginal) : selectedExperiment;
     feedback = record.feedback;
@@ -572,7 +572,7 @@ let interviewSummary = "";
     $("#deepUpdateCard").classList.toggle("hidden", !deepUpdateSummary);
     $("#deepUpdateSummary").textContent = deepUpdateSummary;
     if (deepSynthesis) renderDeepResult();
-    $("#toExperimentButton").disabled = feedback !== "很像" || !mapCanExperiment();
+    $("#toExperimentButton").disabled = !feedbackAllowsExperiment() || !mapCanExperiment();
     resetCoach();
     updateCompetitionStatus();
     if (COMPETITION_EN) applyCompetitionCopy("result");
@@ -581,6 +581,8 @@ let interviewSummary = "";
   function mapCanExperiment(map = document.querySelector("[data-map-key]") ? editedMap() : deepSynthesis?.map) {
     return Boolean(map && [map.fact, map.meaning].every((value) => validVisible(value) && !semanticMissing.test(value)));
   }
+
+  const feedbackAllowsExperiment = () => ["很像", "有一点像"].includes(feedback);
 
   function resetCoach() {
     $("#coachQuestion").value = "";
@@ -1004,7 +1006,7 @@ let interviewSummary = "";
       if (!currentResult) { await showDemoView("question"); $("#selectedCount").textContent = COMPETITION_EN ? "Complete Input before opening the Problem Map" : "先完成输入，问题地图才会出现"; return; }
       if (COMPETITION_MODE && mapRequestState === "idle") await requestAiMap(); else renderResult();
     } else if (safeView === "experiment") {
-      if (!currentResult || !deepSynthesis || feedback !== "很像") { await showDemoView("question"); $("#selectedCount").textContent = COMPETITION_EN ? "Confirm the Problem Map before opening the action" : "先确认问题地图，再进入小动作"; return; }
+      if (!currentResult || !deepSynthesis || !feedbackAllowsExperiment()) { await showDemoView("question"); $("#selectedCount").textContent = COMPETITION_EN ? "Confirm the Problem Map before opening the action" : "先确认问题地图，再进入小动作"; return; }
       if (COMPETITION_MODE && mapRequestState === "idle") await requestAiMap();
       if (!deepSynthesis) return;
       selectedExperiment = selectedExperiment || normalizeExperiment(deepSynthesis.experiments[0]);
@@ -1020,7 +1022,7 @@ let interviewSummary = "";
       activeCycle = {
         id: "active-cycle", cycleKey: "relationship-demo", status: "completed", startDate, endDate: today(),
         topic: COMPETITION_EN ? (competitionCase === "job_search" ? "No job replies became a judgment about ability" : "Fear of a bad answer kept the conversation from starting") : (competitionCase === "job_search" ? "没有求职回复变成了对能力的判决" : "害怕坏答案，所以一直没有开始谈话"), feedback, map: deepSynthesis.map,
-        concepts: deepSynthesis.concepts, alternatives: deepSynthesis.alternatives, insight: deepSynthesis.insight, result: currentResult,
+        concepts: deepSynthesis.concepts, alternatives: deepSynthesis.alternatives, insight: deepSynthesis.insight, adlerAnalysis: deepSynthesis.adlerAnalysis, result: currentResult,
         experiment: selectedExperiment, reports: { 3: { title: "三日阶段观察" }, 7: { title: "七日观察报告" } },
         closingFeedback: COMPETITION_EN
           ? competitionCase === "job_search"
@@ -1375,6 +1377,15 @@ let interviewSummary = "";
   }).filter((value, index, list) => list.indexOf(value) === index).slice(0, 2).join("、");
 
   function renderDeepResult() {
+    const fallbackAdler = COMPETITION_EN
+      ? { title: "Subjective meaning", explanation: `An Adlerian lens separates “${safeVisible(deepSynthesis.map?.fact)}” from what it seemed to mean: “${safeVisible(deepSynthesis.map?.meaning)}”.`, evidence: "This uses only the event and judgment already on the map.", uncertainty: "It is a current reading, not a fact or a fixed personality." }
+      : { title: "主观意义", explanation: `阿德勒视角会把“${safeVisible(deepSynthesis.map?.fact)}”和你赋予它的意义“${safeVisible(deepSynthesis.map?.meaning)}”分开。`, evidence: "这里只使用地图里已经确认的事件和判断。", uncertainty: "这只是目前的一种读法，不是事实，也不是对你人格的判断。" };
+    const adler = deepSynthesis.adlerAnalysis || fallbackAdler;
+    $("#catTemporaryUnderstanding").textContent = deepSynthesis.insight || (COMPETITION_EN ? "Cat has only a temporary reading of this event." : "猫现在只有一个暂时的理解。");
+    $("#adlerPerspectiveTitle").textContent = `${COMPETITION_EN ? "ADLERIAN LENS" : "阿德勒视角"}｜${adler.title}`;
+    $("#adlerPerspectiveText").textContent = `${adler.explanation} ${adler.evidence}`.trim();
+    $("#adlerPerspectiveBoundary").textContent = adler.uncertainty;
+    $("#experimentBridge").textContent = COMPETITION_EN ? "This is only Cat's guess. If some of it fits your experience, we can think of one small experiment and see what new information reality brings." : "这目前只是猫的猜想。要是你觉得和自己的经历有一点像，我们可以一起想一个小实验，看看现实会不会带来新的线索。";
     const alternatives = $("#alternativesList"); alternatives.innerHTML = "";
     alternatives.classList.toggle("hidden", COMPETITION_MODE);
     if (deepSynthesis.alternatives?.length) {
@@ -1388,7 +1399,7 @@ let interviewSummary = "";
       const visibleLabel = COMPETITION_EN ? competitionMapLabels[key] : label;
       const title = document.createElement("label"); title.htmlFor = `map-${key}`; title.textContent = `${index < 5 ? `${index + 1}. ` : ""}${visibleLabel}`;
       const input = document.createElement("textarea"); input.id = `map-${key}`; input.dataset.mapKey = key; input.maxLength = 240; input.value = safeVisible(deepSynthesis.map[key], key === "fact" || key === "unknown" || answeredFields().has(key));
-      input.addEventListener("input", () => { $("#toExperimentButton").disabled = feedback !== "很像" || !mapCanExperiment(); });
+      input.addEventListener("input", () => { $("#toExperimentButton").disabled = !feedbackAllowsExperiment() || !mapCanExperiment(); });
       if (deepUpdatedFields.includes(key)) { const changed = document.createElement("span"); changed.className = "map-updated-label"; changed.textContent = COMPETITION_EN ? "Changed to your words" : "按你的话改了"; wrap.append(changed); }
       input.addEventListener("change", () => saveObservation({ silent: true }).catch(() => {}));
       wrap.append(title, input); fields.append(wrap);
@@ -1613,7 +1624,7 @@ let interviewSummary = "";
       eventSummary: finalMap.fact,
       askedQuestions: state.path.map((questionId) => ({ id: questionId, title: engine.currentQuestion({ ...state, path: [questionId], completed: false, terminal: null })?.title || questionId })),
       result: { type: currentResult.type, primary: currentResult.primary, secondary: currentResult.secondary, support: currentResult.support, title: currentResult.title, summary: currentResult.summary, evidence: currentResult.evidence, alternatives: currentResult.alternatives, action: currentResult.action, escalation: currentResult.escalation, cycle: currentResult.cycle, pathway: currentResult.pathway },
-      insight: deepSynthesis.insight, map: finalMap, mapSources: deepSynthesis.mapSources, evidenceGaps: deepSynthesis.evidenceGaps, alternatives: deepSynthesis.alternatives,
+      insight: deepSynthesis.insight, adlerAnalysis: deepSynthesis.adlerAnalysis, map: finalMap, mapSources: deepSynthesis.mapSources, evidenceGaps: deepSynthesis.evidenceGaps, alternatives: deepSynthesis.alternatives,
       correction: { feedback, changedFields },
       concepts: deepSynthesis.concepts, experiments: deepSynthesis.experiments,
       selectedExperiment: experimentFromForm(),
@@ -1680,6 +1691,7 @@ let interviewSummary = "";
       concepts: record.concepts,
       alternatives: record.alternatives,
       insight: record.insight,
+      adlerAnalysis: record.adlerAnalysis,
       result: record.result,
       experiment: experimentFromForm(),
       experimentVersion: 1,
@@ -1925,7 +1937,7 @@ let interviewSummary = "";
       currentResult = activeCycle.result;
       const storedExperiment = activeCycle.experiment;
       activeCycle.experiment = normalizeExperiment(activeCycle.experiment);
-      deepSynthesis = { insight: activeCycle.insight, map: activeCycle.map, mapSources: activeCycle.mapSources || {}, evidenceGaps: activeCycle.evidenceGaps || [], alternatives: activeCycle.alternatives, concepts: activeCycle.concepts, experiments: [activeCycle.experiment], experiment: activeCycle.experiment.action };
+      deepSynthesis = { insight: activeCycle.insight, adlerAnalysis: activeCycle.adlerAnalysis, map: activeCycle.map, mapSources: activeCycle.mapSources || {}, evidenceGaps: activeCycle.evidenceGaps || [], alternatives: activeCycle.alternatives, concepts: activeCycle.concepts, experiments: [activeCycle.experiment], experiment: activeCycle.experiment.action };
       selectedExperiment = activeCycle.experiment;
       selectedExperimentOriginal = storedExperiment?.aiOriginal ? normalizeExperiment(storedExperiment.aiOriginal) : normalizeExperiment(activeCycle.experiment);
       feedback = activeCycle.feedback;
@@ -2418,7 +2430,7 @@ let interviewSummary = "";
   $("#setupApiKeyButton").addEventListener("click", () => { window.location.href = "/api-setup.html"; });
   $("#continueDeepButton").addEventListener("click", () => requestNextInterviewQuestion());
   $("#toExperimentButton").addEventListener("click", async () => {
-    if (!feedback || !mapCanExperiment(editedMap())) return;
+    if (!feedbackAllowsExperiment() || !mapCanExperiment(editedMap())) return;
     const confirmedMap = editedMap();
     await saveObservation({ silent: true });
     deepSynthesis.map = confirmedMap;
@@ -2644,10 +2656,10 @@ let interviewSummary = "";
     if (!choice) return;
     feedback = choice;
     [...$(".confirm-actions").querySelectorAll("button")].forEach((button) => button.classList.toggle("selected", button.dataset.feedback === feedback));
-    $("#confirmStatus").textContent = COMPETITION_EN ? (choice === "很像" ? "Confirmed. This map stays here until you choose the next step." : "Write the part that does not fit. Cat will change only the affected parts.") : choice === "很像" ? "你已确认。这张地图先放在这里。接下来不急着判断谁对谁错，只找一个你能决定的小动作，看看现实会告诉你什么。" : choice === "有一点像" ? "哪一部分不太像？猫只改相关步骤。" : "猫看偏了。按你的话重来。";
+    $("#confirmStatus").textContent = COMPETITION_EN ? (choice === "很像" ? "Confirmed. This map stays here until you choose the next step." : choice === "有一点像" ? "Some of it fits. You can revise a part or use a small experiment to check the guess." : "Write the part that does not fit. Cat will change only the affected parts.") : choice === "很像" ? "你已确认。这张地图先放在这里。接下来只找一个你能决定的小动作，看看现实会告诉你什么。" : choice === "有一点像" ? "有一部分像。你可以修改不准确的地方，也可以用一个小实验继续核对。" : "猫看偏了。按你的话重来。";
     $("#mapCorrectionLabel").textContent = COMPETITION_EN ? "What should the map revise?" : choice === "有一点像" ? "哪一段准确，哪一段不准确？" : "哪些地方不准确或遗漏了？";
     $("#mapCorrectionWrap").classList.toggle("hidden", !["有一点像", "不太像"].includes(choice));
-    $("#toExperimentButton").disabled = choice !== "很像" || !mapCanExperiment();
+    $("#toExperimentButton").disabled = !feedbackAllowsExperiment() || !mapCanExperiment();
     if (["有一点像", "不太像"].includes(choice)) $("#mapCorrection").focus();
     mapReturnView = "experiment";
     await saveObservation({ silent: true });
