@@ -138,7 +138,7 @@ function validateNextQuestion(data, context = {}) {
   if (knownFields.has(targetField) && !usefulSecondPass) throw new Error(`字段 ${targetField} 已经回答过，请转向尚未覆盖的部分`);
   if (mode !== "question" && knownModes.has(mode)) throw new Error(`步骤 ${mode} 已经问过`);
   const question = cleanVisible(data?.question, "下一问", 120);
-  if (targetField === "move" && /(?:你|接下来).{0,8}(?:打算|准备|可以|能)(?:怎么|做什么)|(?:what|which).{0,10}(?:can|could|will|would) you do|do you plan to|are you going to|this week|next time|tomorrow/i.test(question)) {
+  if (targetField === "move" && /(?:你|接下来).{0,8}(?:打算|准备|可以|能)(?:怎么|做什么)|你希望.{0,20}做(?:点|些)?什么|接下来.{0,10}(?:想|希望|打算|准备|可以|能).{0,10}做|(?:what|which).{0,10}(?:can|could|will|would) you do|what would you like to do|do you plan to|are you going to|this week|next time|tomorrow/i.test(question)) {
     throw new Error("行为字段只能问已经做了什么或没有做什么；未来动作留到实验页");
   }
   const sourceText = String(context.sourceText || "");
@@ -343,7 +343,7 @@ ${catLiteraryStyle}
 输出语言：${outputLanguage}
 任务：这是第 ${round} 轮，只处理用户眼前的一件事，最多 8 轮但不要为了凑轮数提问。事件：${JSON.stringify(body.event || body.note || "")}。宽泛选项仅作入口：${JSON.stringify(body.eventChoice || "")}。此前逐轮确认：${JSON.stringify(priorAnswers)}。已覆盖字段：${JSON.stringify(knownFields)}。已走过步骤：${JSON.stringify(knownModes)}。
 苏格拉底顺序：选项不是结论；把已经发生的事实和还没发生的猜想分开；请用户先自己提出可能推翻判断的事实或替代解释，想不到时才给可能性；再问感受、行动和当下与后来的结果。短复述只能改写用户刚刚明确说过的内容，不能补写情绪、想法、动作或结果。${selfWorthInstruction}
-每次只返回一句短复述和一个下一问，下一问必须依赖最新回答且不得重复。目标字段只能是 fact、meaning、feeling、move、result；mode 可为 question、fact_check、alternative、feeling、action、result、counterevidence。随后补 feeling、action 和 result。给 1-3 个互斥口语选项，同时鼓励自由输入；允许“还不知道”。不得诊断、追溯童年或人格、替第三方断言动机，也不得一次问两个问题。只有关键事实已明确，且行动及结果也已问过时，才令 readyForMap 为 true；前端随后要求用户自己总结。只返回 JSON：{"reflection":"...","question":"...？","targetField":"meaning","mode":"question","readyForMap":false,"options":[{"id":"a","label":"..."},{"id":"b","label":"..."},{"id":"unknown","label":"还不知道"}]}`;
+每次只返回一句短复述和一个下一问，下一问必须依赖最新回答且不得重复。目标字段只能是 fact、meaning、feeling、move、result；mode 可为 question、fact_check、alternative、feeling、action、result、counterevidence。随后补 feeling、action 和 result。move 只问事情发生后用户已经做了什么或没有做什么；地图完成前禁止问用户希望、打算、可以或将会做什么，未来动作留到实验页。给 1-3 个互斥口语选项，同时鼓励自由输入；允许“还不知道”。不得诊断、追溯童年或人格、替第三方断言动机，也不得一次问两个问题。只有关键事实已明确，且行动及结果也已问过时，才令 readyForMap 为 true；前端随后要求用户自己总结。只返回 JSON：{"reflection":"...","question":"...？","targetField":"meaning","mode":"question","readyForMap":false,"options":[{"id":"a","label":"..."},{"id":"b","label":"..."},{"id":"unknown","label":"还不知道"}]}`;
       try {
         return send(res, 200, await askValidated(prompt, (data) => validateNextQuestion(data, { language, previousQuestions, knownFields, knownModes, sourceText })));
       } catch (error) {

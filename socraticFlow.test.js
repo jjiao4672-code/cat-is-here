@@ -73,6 +73,8 @@ test("secondary meaning probes cannot replace the user's main interpretation", (
 test("the map action field cannot be filled by a future experiment", () => {
   assert.match(server, /行为字段只能问已经做了什么或没有做什么；未来动作留到实验页/);
   assert.match(server, /targetField === "move"[\s\S]*this week\|next time\|tomorrow/);
+  assert.match(server, /你希望.{0,20}做/);
+  assert.match(server, /地图完成前禁止问用户希望、打算、可以或将会做什么/);
 });
 
 test("short reflections cannot reverse waiting into stopping", () => {
