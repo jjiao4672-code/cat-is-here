@@ -33,12 +33,13 @@ test("dynamic options stay optional beside user-owned text", () => {
 });
 
 test("the interview stays user-led and asks for a summary before the map", () => {
-  assert.match(script, /if \(interviewRound >= 8\) return missing \? renderRequiredGap\(missing\) : renderUserSummaryPrompt\(\)/);
+  assert.match(script, /const interviewLimit = 10/);
+  assert.match(script, /missingDepth \? renderRequiredDepthGap\(missingDepth\) : renderUserSummaryPrompt\(\)/);
   assert.match(script, /if \(data\.readyForMap && deepAnswers\.length >= 2\)/);
   assert.match(script, /renderRequiredGap\(missing\)/);
   assert.match(script, /mode: "user_summary"/);
   assert.match(script, /interviewQuestion\?\.mode === "user_summary"/);
-  assert.match(server, /是对自己的判断，不是已经证明的事实/);
+  assert.match(server, /在 evidence 阶段明确区分判断和事实/);
   assert.match(server, /mode: "counterevidence"/);
   assert.match(server, /不要限定为求职原因/);
   assert.match(server, /用户没有表达自我否定，不能替用户加入这一判断/);
@@ -67,7 +68,8 @@ test("user claims stay grounded in typed or confirmed answers", () => {
 });
 
 test("secondary meaning probes cannot replace the user's main interpretation", () => {
-  assert.match(server, /const isCoreFieldAnswer = .*alternative.*counterevidence/);
+  assert.match(server, /const isCoreFieldAnswer = .*secondaryMeaningModes\.has/);
+  assert.match(server, /depthProbeModes = \["evidence", "counterevidence", "alternative", "protective_purpose"\]/);
   assert.match(server, /priorAnswers\.filter\(isCoreFieldAnswer\)/);
   assert.match(server, /!isCoreFieldAnswer\(answer\)/);
   assert.match(script, /answeredFields = \(\) => new Set\(deepAnswers\.filter\(isCoreFieldAnswer\)/);
@@ -88,9 +90,10 @@ test("short reflections cannot reverse waiting into stopping", () => {
 });
 
 test("the first follow-up after a concrete event asks for feeling before interpretation", () => {
-  const feelingGate = server.indexOf('!["meaning", "feeling", "move", "result"].some');
-  const selfWorthGate = server.indexOf('if (selfWorth && !knownModes.includes("counterevidence"))');
-  assert.ok(feelingGate > 0 && feelingGate < selfWorthGate);
+  const feelingStage = server.indexOf('{ targetField: "feeling", mode: "feeling" }');
+  const meaningStage = server.indexOf('{ targetField: "meaning", mode: "question" }');
+  assert.ok(feelingStage > 0 && feelingStage < meaningStage);
+  assert.match(server, /expectedStage\.mode === "feeling"/);
   assert.match(server, /这件事发生时，你有什么感受/);
   assert.match(server, /targetField: "feeling", mode: "feeling"/);
 });
@@ -99,8 +102,19 @@ test("all map fields are asked before summary and answered placeholders are repa
   assert.match(script, /\["meaning", "feeling", "move", "result"\]\.find/);
   assert.match(script, /not asked yet/i);
   assert.doesNotMatch(script, /Prepare only|只做准备/);
-  assert.match(server, /不能只记录情绪或想法/);
+  assert.match(server, /动作必须取得一条能区分原判断和 alternative 的现实信息/);
   assert.match(script, /suggestedAction/);
+});
+
+test("depth stages must cover evidence, alternatives, consequences, and possible protection", () => {
+  assert.match(server, /reflectionStages = \[[\s\S]*mode: "evidence"[\s\S]*mode: "counterevidence"[\s\S]*mode: "alternative"[\s\S]*mode: "action"[\s\S]*mode: "result"[\s\S]*mode: "protective_purpose"/);
+  assert.match(server, /依据、反例、替代解释和保护作用尚未问全/);
+  assert.match(server, /不能断言用户故意这样做/);
+  assert.match(server, /resultHeldBack[\s\S]*没有带来能核对/);
+  assert.match(server, /protectivePurpose[\s\S]*由你判断，不是事实/);
+  assert.match(script, /function applyInterviewAnswersToSynthetic/);
+  assert.match(script, /base\.map = \{ \.\.\.base\.map, \.\.\.byField, fact: openingNote \}/);
+  assert.match(script, /if \(COMPETITION_MODE\) deepSynthesis = applyInterviewAnswersToSynthetic/);
 });
 
 test("partial maps distinguish not asked, not known, and valid absence", () => {

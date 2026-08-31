@@ -88,10 +88,12 @@ let interviewSummary = "";
   const invalidVisibleValue = /^(?:undefined|null|\[object\s+Object\]|n\/?a|tbd|todo|placeholder|待填写|待补充)$/i;
   const punctuationOnly = /^[\s\p{P}\p{S}]+$/u;
   const semanticMissing = /^(?:尚未确认|还没说到|还不知道|not yet confirmed|not asked yet|not yet known)$/i;
+  const interviewLimit = 10;
+  const depthProbeModes = ["evidence", "counterevidence", "alternative", "protective_purpose"];
   const validVisible = (value) => typeof value === "string" && Boolean(value.trim()) && !invalidVisibleValue.test(value.trim().replace(/\s+/g, " ")) && !punctuationOnly.test(value.trim());
   const missingText = (asked = false) => COMPETITION_EN ? (asked ? "Not yet known" : "Not asked yet") : (asked ? "还不知道" : "还没说到");
   const safeVisible = (value, asked = false) => validVisible(value) ? value.trim() : missingText(asked);
-  const isCoreFieldAnswer = (answer) => answer?.targetField && !(answer.targetField === "meaning" && ["alternative", "counterevidence"].includes(answer.mode));
+  const isCoreFieldAnswer = (answer) => ["fact", "meaning", "feeling", "move", "result"].includes(answer?.targetField) && !(answer.targetField === "meaning" && depthProbeModes.includes(answer.mode));
   const answeredFields = () => new Set(deepAnswers.filter(isCoreFieldAnswer).map((answer) => answer.targetField));
 
   function updateLandingEntry() {
@@ -504,6 +506,7 @@ let interviewSummary = "";
   function acceptCompetitionFallback() {
     if (mapRequestState !== "fallback-offered") return;
     deepSynthesis = COMPETITION_MODE ? (COMPETITION_EN ? competitionSynthesis(competitionCase) : competitionSynthesisZh(competitionCase)) : fallbackSynthesis(deepTopic());
+    if (COMPETITION_MODE) deepSynthesis = applyInterviewAnswersToSynthetic(deepSynthesis, { partial: interviewPartial });
     deepDiveEnhanced = false;
     mapRequestState = "synthetic";
     feedback = null;
@@ -533,7 +536,7 @@ let interviewSummary = "";
       deepSynthesis.map = Object.fromEntries(Object.entries(deepSynthesis.map).map(([key, value]) => [key, safeVisible(value, key === "fact" || key === "unknown" || asked.has(key))]));
     }
     const map = deepSynthesis?.map;
-    $("#resultSummary").textContent = fallbackOffered ? "实时 AI 没有返回可用结果。固定内容还没有显示；由你决定是否继续查看标注清楚的合成示例。" : syntheticMap ? "这不是实时 AI 回答。它是你明确选择后显示的固定合成示例。" : localMap ? "当前未连接到 AI 服务。这一版只根据你刚才的结构化回答整理，并明确标记为本地版；你可以继续使用，也可以稍后联网重新生成。" : awaitingMap ? "猫正在按线索、解释、感受、行动和结果整理这一件事。" : map && currentResult.type === "reflection" ? `猫只在描述这次情境：发生【${map.fact}】后，你解释为【${map.meaning}】，感到【${map.feeling}】，接着【${map.move}】。你可以修改或否定这张地图。` : currentResult.summary;
+    $("#resultSummary").textContent = fallbackOffered ? "实时 AI 没有返回可用结果。固定内容还没有显示；由你决定是否继续查看标注清楚的合成示例。" : syntheticMap ? "这不是实时 AI 回答。它用固定模板整理了你刚才确认的回答。" : localMap ? "当前未连接到 AI 服务。这一版只根据你刚才的结构化回答整理，并明确标记为本地版；你可以继续使用，也可以稍后联网重新生成。" : awaitingMap ? "猫正在按线索、解释、感受、行动和结果整理这一件事。" : map && currentResult.type === "reflection" ? `猫只在描述这次情境：发生【${map.fact}】后，你解释为【${map.meaning}】，感到【${map.feeling}】，接着【${map.move}】。你可以修改或否定这张地图。` : currentResult.summary;
     $("#surfaceProblem").textContent = map ? map.fact : currentResult.pathway ? currentResult.pathway.trigger : (currentResult.evidence.length ? currentResult.evidence.join("；") : "这次没有生成普通心理结论。");
     $("#protectivePurpose").textContent = map ? map.meaning : currentResult.pathway ? currentResult.pathway.meaning : "尚未确认";
     $("#feelingResult").textContent = map ? map.feeling : currentResult.pathway?.feeling || "尚未确认";
@@ -691,6 +694,33 @@ let interviewSummary = "";
       alternatives: ["联系变少可能有不同原因。", "谈话可能困难，但不等于一定会结束关系。"], concepts: [],
       experiments: [{ id: "conversation_invite", title: "先准备一条谈话邀请", prediction: "如果主动邀请谈话，关系会马上结束。", action: "第一步：写一条清楚、不指责的谈话邀请，并决定发送时间；当下安全且能做时，可以发送。", observableOutcome: "观察到约定时间；记录是否发送、实际回复和仍然不知道的部分。", continueCondition: "邀请保持尊重、由自己控制且安全时继续。", fallback: "出现现实安全或边界风险时停止；否则缩小为只写草稿。", resultMeaning: "对方同意时间会增加一条事实，但不能决定关系走向；拒绝会提供另一种信息；没有回复时仍保留不知道。", needsPattern: false }]
     };
+  }
+
+  function applyInterviewAnswersToSynthetic(base, { partial = false } = {}) {
+    const byField = Object.fromEntries(deepAnswers.filter(isCoreFieldAnswer).map((answer) => [answer.targetField, answer.unknown ? missingText(true) : answer.answer]));
+    const byMode = Object.fromEntries(deepAnswers.filter((answer) => depthProbeModes.includes(answer.mode)).map((answer) => [answer.mode, answer.unknown ? missingText(true) : answer.answer]));
+    base.map = { ...base.map, ...byField, fact: openingNote };
+    if (byMode.protective_purpose && !semanticMissing.test(byMode.protective_purpose)) base.map.hypothesis = COMPETITION_EN
+      ? `Possibly, this response helped with: “${byMode.protective_purpose}”. You decide whether that fits.`
+      : `可能是，这个反应当时帮你“${byMode.protective_purpose}”；是否如此由你判断。`;
+    if (byMode.counterevidence || byMode.alternative) base.map.unknown = COMPETITION_EN
+      ? `Still unresolved: ${byMode.counterevidence || "what would weaken the judgment"}. Another possible explanation: ${byMode.alternative || "not yet known"}.`
+      : `仍待核对：${byMode.counterevidence || "什么会让原判断没那么确定"}。其他可能解释：${byMode.alternative || "还不知道"}。`;
+    if (byMode.alternative && !semanticMissing.test(byMode.alternative)) base.alternatives = [byMode.alternative, ...base.alternatives.filter((item) => item !== byMode.alternative)].slice(0, 3);
+    const heldBack = /停止|没(?:有)?做|回避|退后|反复|等待|stopp|no action|did not|avoid|held back|kept checking|waited/i.test(byField.move || "");
+    if (byField.result && byField.meaning && !semanticMissing.test(byField.result)) base.map.result = COMPETITION_EN
+      ? `${byField.result}. ${heldBack ? `That response produced no new check of “${byField.meaning}”, so the judgment may keep feeling true.` : `This adds one clue, but it does not by itself prove “${byField.meaning}”.`}`
+      : `${byField.result}。${heldBack ? `这个反应没有带来能核对“${byField.meaning}”的新事实，所以原判断可能继续显得很真。` : `这增加了一条线索，但还不能单独证明“${byField.meaning}”。`}`;
+    base.insight = COMPETITION_EN
+      ? `Cat arranged the answers you selected: when “${base.map.fact}” seemed to mean “${base.map.meaning}”, you felt “${base.map.feeling}” and then “${base.map.move}”. Does that fit?`
+      : `猫把你确认的回答排在了一起：发生“${base.map.fact}”后，你把它理解为“${base.map.meaning}”，感到“${base.map.feeling}”，接着“${base.map.move}”。这样连起来像你吗？`;
+    if (partial) {
+      const canGuess = Boolean(byField.meaning && byField.move && !semanticMissing.test(byField.meaning) && !semanticMissing.test(byField.move));
+      base.map = { ...base.map, meaning: byField.meaning || missingText(), feeling: byField.feeling || missingText(), move: byField.move || missingText(), result: byField.result || missingText(), hypothesis: canGuess ? base.map.hypothesis : missingText(), unknown: missingText(true) };
+      base.mapSources = Object.fromEntries(Object.keys(base.map).map((key) => [key, key === "fact" ? ["ENTRY_01"] : deepAnswers.filter((answer) => isCoreFieldAnswer(answer) && answer.targetField === key).map((answer) => answer.id)]));
+      base.insight = COMPETITION_EN ? "Cat organized only what you have said so far. Unasked parts stay marked. You decide whether to continue." : "猫只整理了你已经说到的部分。还没问到的地方继续标着，由你决定要不要继续。";
+    }
+    return base;
   }
 
   function renderCompetitionUnderstanding() {
@@ -851,12 +881,12 @@ let interviewSummary = "";
       set("#heroTitle", "Separate what happened from what it might mean.");
       set("#heroDescription", "You can change this map when you learn more.");
       set("#stepLabel", "PROBLEM MAP · 2 OF 4");
-      set("#selectedCount", mapRequestState === "synthetic" ? "Synthetic example · fixed output" : "Live AI · editable output");
+      set("#selectedCount", mapRequestState === "synthetic" ? "Synthetic example · fixed template" : "Live AI · editable output");
       set("#resultPanel .result-step", "2 OF 4 · PROBLEM MAP");
       const defaultSyntheticInput = openingNote === COMPETITION_CASES[competitionCase].en;
       const exampleTitle = competitionCase === "job_search" ? "No reply ≠ a verdict on ability" : "A feared ending is not the same as a known ending";
       set("#resultTitle", mapRequestState === "synthetic" ? `Synthetic example · ${exampleTitle}` : defaultSyntheticInput ? exampleTitle : "One event, one guess you can change");
-      set("#resultSummary", mapRequestState === "synthetic" ? "This fixed output is the labeled example you selected. It appeared only after your choice and is not a response to edited personal input." : `This map came from Live AI. What happened: ${deepSynthesis.map.fact} Change anything Cat misunderstood.`);
+      set("#resultSummary", mapRequestState === "synthetic" ? "This is not a Live AI response. A fixed template arranged the answers you confirmed." : `This map came from Live AI. What happened: ${deepSynthesis.map.fact} Change anything Cat misunderstood.`);
       const coreLabels = ["What happened", "What I thought", "What I felt", "What I did or did not do", "What happened right away and later", "Cat's guess (you decide)", "Still unknown"];
       document.querySelectorAll("#answerCoreCard .result-grid span").forEach((node, index) => { node.textContent = coreLabels[index]; });
       set("#surfaceProblem", deepSynthesis.map.fact);
@@ -1051,18 +1081,27 @@ let interviewSummary = "";
   const syntheticInterview = (caseId, round, language = COMPETITION_EN ? "en" : "zh") => {
     const en = language === "en";
     const relationship = [
-      { targetField: "meaning", reflection: en ? "You have noticed more distance and have not asked about it yet." : "你注意到关系变疏远了，也还没有开口。", question: en ? "Before you ask, what answer are you most afraid of hearing?" : "没开口之前，你最担心对方会说什么？", options: en ? ["They want to separate", "They no longer care", "I do not know yet"] : ["他说想分开", "他说已经不在乎了", "我还不知道"] },
-      { targetField: "feeling", reflection: en ? "You are predicting that the conversation may end the relationship. That has not happened yet." : "你预想谈话可能会让关系结束。这件事目前还没有发生。", question: en ? "When that prediction appears, what feeling is strongest?" : "想到这个结果时，最明显的感受是什么？", options: en ? ["Fear", "Sadness", "No clear feeling"] : ["害怕", "难过", "没有明显感受"] },
-      { targetField: "move", reflection: en ? "Fear is the clearest feeling you named." : "你说得最清楚的是害怕。", question: en ? "What has that fear led you to do or not do?" : "这个害怕让你做了什么，或者没有做什么？", options: en ? ["Avoid the conversation", "Analyze it alone", "No action taken"] : ["回避这次谈话", "自己反复分析", "没有采取行动"] },
-      { targetField: "result", reflection: en ? "You have held back from the conversation and kept analyzing it alone." : "你没有开始谈话，而是自己反复分析。", question: en ? "What did that change right away, and what happened later?" : "这样做当下带来了什么，后来又怎样？", options: en ? ["Brief relief, then more guessing", "No new information", "I do not know yet"] : ["当下轻松一点，后来猜得更多", "一直没有得到新信息", "我还不知道"] }
+      { targetField: "feeling", mode: "feeling", reflection: en ? "Cat has the change you noticed in this relationship." : "猫先记下了你在这段关系里注意到的变化。", question: en ? "What did you feel when you noticed it?" : "注意到这个变化时，你有什么感受？", options: en ? ["Afraid", "Sad", "No clear feeling"] : ["害怕", "难过", "没有明显感受"] },
+      { targetField: "meaning", mode: "question", reflection: en ? "You named how that moment felt." : "你说了那一刻的感受。", question: en ? "Before you had an answer, what did the change seem to mean?" : "在得到答案以前，你觉得这个变化说明了什么？", options: en ? ["The relationship may be ending", "I may no longer matter", "I do not know yet"] : ["关系可能要结束", "我可能不再重要", "我还不知道"] },
+      { targetField: "meaning", mode: "evidence", reflection: en ? "That is the conclusion you reached, not yet the whole outcome." : "这是你当时得出的判断，还不是完整结果。", question: en ? "What observable fact currently supports that conclusion?" : "目前有什么可以观察到的事实支持这个判断？", options: en ? ["Contact clearly decreased", "A specific response changed", "No clear fact yet"] : ["联系确实明显减少", "有一个具体回应发生变化", "目前没有明确事实"] },
+      { targetField: "meaning", mode: "counterevidence", reflection: en ? "Cat has the fact that makes the conclusion feel plausible." : "猫记下了让这个判断显得有依据的事实。", question: en ? "What fact might make that conclusion less certain?" : "什么事实可能让这个判断没那么确定？", options: en ? ["They still make time to respond", "Past distance did not end the relationship", "I do not know yet"] : ["对方仍会安排时间回应", "过去疏远过但关系没有结束", "我还不知道"] },
+      { targetField: "meaning", mode: "alternative", reflection: en ? "Some facts may fit the worry, while others may not." : "有些事实可能符合担心，也有些不完全符合。", question: en ? "What other explanation could also fit what happened?" : "还有什么解释也可能符合这次发生的事？", options: en ? ["They may be under pressure", "The way we communicate may have changed", "I do not know yet"] : ["对方可能正承受压力", "我们的沟通方式可能变了", "我还不知道"] },
+      { targetField: "move", mode: "action", reflection: en ? "The original worry is no longer the only possible explanation." : "原来的担心已经不是唯一解释。", question: en ? "What did that worry lead you to do or stop doing?" : "原来的担心让你做了什么，或者停止了什么？", options: en ? ["Avoided the conversation", "Kept analyzing alone", "No action taken"] : ["回避这次谈话", "自己反复分析", "没有采取行动"] },
+      { targetField: "result", mode: "result", reflection: en ? "Cat has what the worry led you to do." : "猫记下了这个担心带来的行动。", question: en ? "What changed right away, and what happened later?" : "这样做当下带来了什么，后来又怎样？", options: en ? ["Brief relief, then more guessing", "No new information", "I do not know yet"] : ["当下轻松一点，后来猜得更多", "一直没有得到新信息", "我还不知道"] },
+      { targetField: "meaning", mode: "protective_purpose", reflection: en ? "That response had an immediate and later result." : "这个反应带来了当下和后来的结果。", question: en ? "Without assuming it was deliberate, what might avoiding the conversation have helped you avoid?" : "不假定这是故意的，回避谈话可能帮你避开了什么？", options: en ? ["Hearing a painful answer", "Conflict before I felt ready", "I do not think it protected me"] : ["听见一个难受的答案", "在没准备好时发生冲突", "我不觉得它在保护我"] }
     ];
     const jobs = [
-      { targetField: "meaning", reflection: en ? "You sent applications and received no replies." : "你投出了简历，也没有收到回复。", question: en ? "What did the silence start to mean to you?" : "这些沉默让你开始怎样理解自己或这件事？", options: en ? ["My ability is not enough", "The roles may not fit", "I do not know yet"] : ["我的能力不行", "岗位可能不匹配", "我还不知道"] },
-      { targetField: "feeling", reflection: en ? "You started reading the silence as a judgment of your ability." : "你开始把沉默理解成对自己能力的判断。", question: en ? "What feeling followed that interpretation?" : "有了这个解释后，最明显的感受是什么？", options: en ? ["Anxious", "Ashamed", "No clear feeling"] : ["焦虑", "自卑", "没有明显感受"] },
-      { targetField: "move", reflection: en ? "Anxiety and shame followed that judgment." : "这个判断之后，你感到焦虑和自卑。", question: en ? "What did you do or stop doing next?" : "接下来你做了什么，或者停止做了什么？", options: en ? ["Stopped applying", "Kept checking replies", "No action taken"] : ["停止继续投递", "反复查看回复", "没有采取行动"] },
-      { targetField: "result", reflection: en ? "You stopped applying after the silence felt like a verdict." : "沉默像一份判决时，你停止了继续投递。", question: en ? "What changed right away, and what happened later?" : "停止投递后，当下怎样，后来又怎样？", options: en ? ["Brief relief, then more anxiety", "No new information", "I do not know yet"] : ["当下轻松，后来更焦虑", "没有得到新信息", "我还不知道"] }
+      { targetField: "feeling", mode: "feeling", reflection: en ? "Cat has the applications and the silence that followed." : "猫先记下了你投出简历后遇到的沉默。", question: en ? "What did you feel when no reply came?" : "一直没有回复时，你有什么感受？", options: en ? ["Anxious", "Ashamed", "No clear feeling"] : ["焦虑", "自卑", "没有明显感受"] },
+      { targetField: "meaning", mode: "question", reflection: en ? "You named how the silence felt." : "你说了这段沉默带来的感受。", question: en ? "What did the silence start to mean about you or the situation?" : "这些沉默让你开始怎样理解自己或这件事？", options: en ? ["My ability is not enough", "The roles may not fit", "I do not know yet"] : ["我的能力不行", "岗位可能不匹配", "我还不知道"] },
+      { targetField: "meaning", mode: "evidence", reflection: en ? "That is the judgment the silence started to carry." : "这是沉默开始承载的判断。", question: en ? "What observable fact currently supports that judgment?" : "目前有什么可以观察到的事实支持这个判断？", options: en ? ["Several suitable applications had no reply", "Specific feedback pointed to a skill gap", "No clear fact yet"] : ["多个匹配岗位都没有回复", "具体反馈指出了能力缺口", "目前没有明确事实"] },
+      { targetField: "meaning", mode: "counterevidence", reflection: en ? "Cat has what makes the judgment feel plausible." : "猫记下了让这个判断显得有依据的事实。", question: en ? "What fact might make “my ability is not enough” less certain?" : "什么事实可能让“能力不行”这个判断没那么确定？", options: en ? ["Positive feedback I have received", "Something difficult I completed", "I do not know yet"] : ["我收到过的具体肯定", "我完成过的一件困难任务", "我还不知道"] },
+      { targetField: "meaning", mode: "alternative", reflection: en ? "The silence does not point in only one direction." : "这些沉默并不只指向一种解释。", question: en ? "What other explanation could also fit the lack of replies?" : "没有回复，还可能有哪些其他解释？", options: en ? ["The résumé may not show the fit", "The roles or timing may be wrong", "I do not know yet"] : ["简历没有呈现匹配度", "岗位方向或招聘时间不合适", "我还不知道"] },
+      { targetField: "move", mode: "action", reflection: en ? "Ability is now one possible explanation, not the only one." : "能力问题现在只是可能解释之一，不是唯一解释。", question: en ? "What did the original judgment lead you to do or stop doing?" : "原来的判断让你做了什么，或者停止了什么？", options: en ? ["Stopped applying", "Kept checking replies", "No action taken"] : ["停止继续投递", "反复查看回复", "没有采取行动"] },
+      { targetField: "result", mode: "result", reflection: en ? "Cat has what the judgment led you to do." : "猫记下了这个判断带来的行动。", question: en ? "What changed right away, and what happened later?" : "这样做当下带来了什么，后来又怎样？", options: en ? ["Brief relief, then more anxiety", "No new information", "I do not know yet"] : ["当下轻松，后来更焦虑", "没有得到新信息", "我还不知道"] },
+      { targetField: "meaning", mode: "protective_purpose", reflection: en ? "That response had an immediate and later result." : "这个反应带来了当下和后来的结果。", question: en ? "Without assuming it was deliberate, what might stopping applications have helped you avoid?" : "不假定这是故意的，停止投递可能帮你避开了什么？", options: en ? ["Another possible rejection", "More effort without certainty", "I do not think it protected me"] : ["再次可能被拒绝", "在不确定中继续投入", "我不觉得它在保护我"] }
     ];
-    const item = (caseId === "job_search" ? jobs : relationship)[Math.min(round - 1, 3)];
+    const flow = caseId === "job_search" ? jobs : relationship;
+    const item = flow[Math.min(round - 1, flow.length - 1)];
     return { ...item, options: item.options.map((label, index) => ({ id: /不知道|do not know/i.test(label) ? "unknown" : `option_${index + 1}`, label })), readyForMap: false };
   };
 
@@ -1072,7 +1111,7 @@ let interviewSummary = "";
     $("#resultPanel").classList.add("hidden");
     $("#questionPanel").classList.add("hidden");
     $("#followupPanel").classList.remove("hidden", "interview-error");
-    $("#followupKicker").textContent = COMPETITION_EN ? `LIVE AI · QUESTION ${Math.min(interviewRound + 1, 8)}` : `实时 AI · 第 ${Math.min(interviewRound + 1, 8)} 问`;
+    $("#followupKicker").textContent = COMPETITION_EN ? `LIVE AI · QUESTION ${Math.min(interviewRound + 1, interviewLimit)}` : `实时 AI · 第 ${Math.min(interviewRound + 1, interviewLimit)} 问`;
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
     $("#followupBackButton span").textContent = COMPETITION_EN ? "Back" : "上一题";
     $("#followupReflection").textContent = COMPETITION_EN ? "Here is what Cat heard so far." : "猫先把你刚才说的放在这里。";
@@ -1106,8 +1145,9 @@ let interviewSummary = "";
 
   async function requestNextInterviewQuestion({ retry = false } = {}) {
     const missing = ["meaning", "feeling", "move", "result"].find((field) => !answeredFields().has(field));
-    if (interviewRound >= 8) return missing ? renderRequiredGap(missing) : renderUserSummaryPrompt();
-    if (interviewSynthetic) return interviewRound >= 4 ? (missing ? renderRequiredGap(missing) : renderUserSummaryPrompt()) : renderInterviewQuestion(syntheticInterview(competitionCase, interviewRound + 1));
+    const missingDepth = depthProbeModes.find((mode) => !deepAnswers.some((answer) => answer.mode === mode));
+    if (interviewRound >= interviewLimit) return missing ? renderRequiredGap(missing) : missingDepth ? renderRequiredDepthGap(missingDepth) : renderUserSummaryPrompt();
+    if (interviewSynthetic) return interviewRound >= 8 ? (missing ? renderRequiredGap(missing) : missingDepth ? renderRequiredDepthGap(missingDepth) : renderUserSummaryPrompt()) : renderInterviewQuestion(syntheticInterview(competitionCase, interviewRound + 1));
     renderInterviewLoading();
     mapRequestState = "loading";
     try {
@@ -1116,13 +1156,15 @@ let interviewSummary = "";
         round: interviewRound + 1, language: COMPETITION_EN ? "en" : "zh", safetyRisk: false
       });
       const duplicateQuestion = deepAnswers.some((answer) => String(answer.question || "").replace(/[\s?？]/g, "").toLowerCase() === String(data.question || "").replace(/[\s?？]/g, "").toLowerCase());
-      const secondaryMeaning = data.targetField === "meaning" && ["counterevidence", "alternative"].includes(data.mode);
+      const secondaryMeaning = data.targetField === "meaning" && depthProbeModes.includes(data.mode);
       const usefulSecondPass = secondaryMeaning && !deepAnswers.some((answer) => answer.mode === data.mode);
       const repeatedField = secondaryMeaning ? !usefulSecondPass : answeredFields().has(data.targetField);
       if (duplicateQuestion || (repeatedField && !usefulSecondPass)) return missing ? renderRequiredGap(missing) : renderUserSummaryPrompt();
       if (data.readyForMap && deepAnswers.length >= 2) {
         const requiredGap = ["meaning", "feeling", "move", "result"].find((field) => !answeredFields().has(field));
         if (requiredGap) return renderRequiredGap(requiredGap);
+        const requiredDepthGap = depthProbeModes.find((mode) => !deepAnswers.some((answer) => answer.mode === mode));
+        if (requiredDepthGap) return renderRequiredDepthGap(requiredDepthGap);
         return renderUserSummaryPrompt();
       }
       interviewQuestion = data;
@@ -1161,6 +1203,17 @@ let interviewSummary = "";
     }[field];
     const modes = { meaning: "question", feeling: "feeling", move: "action", result: "result" };
     renderInterviewQuestion({ ...copy, targetField: field, mode: modes[field], options: copy.options.map((label, i) => ({ id: /不知道|do not know/i.test(label) ? "unknown" : `gap_${i + 1}`, label })) });
+  }
+
+  function renderRequiredDepthGap(mode) {
+    const en = COMPETITION_EN;
+    const copy = {
+      evidence: { reflection: en ? "We have the judgment, but not what currently supports it." : "原来的判断有了，但还没核对目前凭什么这样判断。", question: en ? "What observable fact currently supports this judgment?" : "目前有什么可以观察到的事实支持这个判断？", options: en ? ["A specific response or result", "A repeated pattern", "No clear fact yet"] : ["一个具体回应或结果", "一个重复出现的情况", "目前没有明确事实"] },
+      counterevidence: { reflection: en ? "A judgment needs room for facts that do not fit it." : "一个判断也需要给不符合它的事实留位置。", question: en ? "What fact might make this judgment less certain?" : "什么事实可能让这个判断没那么确定？", options: en ? ["Specific outside feedback", "Something concrete I completed", "I do not know yet"] : ["具体的外部反馈", "我完成过的一件具体事情", "我还不知道"] },
+      alternative: { reflection: en ? "The original judgment may not be the only explanation." : "原来的判断可能不是唯一解释。", question: en ? "What other explanation could also fit these facts?" : "还有什么解释也可能符合这些事实？", options: en ? ["Timing or circumstances", "A mismatch rather than a verdict", "I do not know yet"] : ["时间或现实条件", "不匹配而不是对我的判决", "我还不知道"] },
+      protective_purpose: { reflection: en ? "We have what you did and what followed." : "已经看见你做了什么，以及后来发生了什么。", question: en ? "Without assuming it was deliberate, what might this response have helped you avoid?" : "不假定这是故意的，这个反应可能帮你避开了什么？", options: en ? ["More rejection or conflict", "Acting before I felt ready", "I do not think it protected me"] : ["再次被拒绝或发生冲突", "在没准备好时行动", "我不觉得它在保护我"] }
+    }[mode];
+    renderInterviewQuestion({ ...copy, targetField: "meaning", mode, options: copy.options.map((label, index) => ({ id: /不知道|do not know/i.test(label) ? "unknown" : `depth_${index + 1}`, label })) });
   }
 
   function renderSummaryConfirmation() {
@@ -1212,18 +1265,7 @@ let interviewSummary = "";
     interviewPartial = Boolean(partial || deepAnswers.length < 4);
     mapReturnView = "question";
     if (interviewSynthetic) {
-      const base = COMPETITION_EN ? competitionSynthesis(competitionCase) : competitionSynthesisZh(competitionCase);
-      if (interviewPartial) {
-        const byField = Object.fromEntries(deepAnswers.filter(isCoreFieldAnswer).map((answer) => [answer.targetField, answer.unknown ? missingText(true) : answer.answer]));
-        const canGuess = Boolean(byField.meaning && byField.move && !semanticMissing.test(byField.meaning) && !semanticMissing.test(byField.move));
-        base.map = {
-          fact: openingNote,
-          meaning: byField.meaning || missingText(), feeling: byField.feeling || missingText(), move: byField.move || missingText(), result: byField.result || missingText(),
-          hypothesis: canGuess ? base.map.hypothesis : missingText(), unknown: missingText(true)
-        };
-        base.mapSources = Object.fromEntries(Object.keys(base.map).map((key) => [key, key === "fact" ? ["ENTRY_01"] : deepAnswers.filter((answer) => isCoreFieldAnswer(answer) && answer.targetField === key).map((answer) => answer.id)]));
-        base.insight = COMPETITION_EN ? "Cat organized only what you have said so far. Unasked parts stay marked. You decide whether to continue." : "猫只整理了你已经说到的部分。还没问到的地方继续标着，由你决定要不要继续。";
-      }
+      const base = applyInterviewAnswersToSynthetic(COMPETITION_EN ? competitionSynthesis(competitionCase) : competitionSynthesisZh(competitionCase), { partial: interviewPartial });
       deepSynthesis = base;
       mapRequestState = "synthetic";
       deepDiveEnhanced = false;

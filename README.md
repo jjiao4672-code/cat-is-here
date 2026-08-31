@@ -31,7 +31,7 @@ Competition mode does not write to Local Storage or IndexedDB. Normal mode saves
 
 ## What AI does
 
-AI chooses the next question from the current event and confirmed answers, then proposes a correctable map. It does not decide the user's personality, read another person's motives, or determine whether a relationship, application, or prediction will turn out well.
+AI chooses the next question from the current event and confirmed answers, then proposes a correctable map. Before the map, the interview asks in order about feeling, interpretation, supporting evidence, counterevidence, another possible explanation, action or avoidance, the immediate and later result, and a possible protective purpose. It does not decide the user's personality, read another person's motives, or determine whether a relationship, application, or prediction will turn out well.
 
 The server validates each question and map before display. A question must target an allowed field, avoid repetition, keep user text as the source, and stay in the selected language. A map must use valid source IDs, preserve uncertainty, reject diagnostic claims, and keep the proposed action under the user's control.
 
@@ -89,7 +89,7 @@ Do not put a real key in browser code, source control, or a public setup form. H
 npm test
 ```
 
-Current result: 104 tests passing. The checks cover question order, typed and selected answers, back navigation, duplicate-question prevention, unsupported self-worth claims, primary versus follow-up meaning fields, past actions versus future experiments, all required map fields, user-written summary, correction, action branches, user-owned cognitive update, explicit saving, safety routing, identifier redaction, bilingual output, failure handling, competition persistence isolation, visible-map experiment eligibility, responsive experiment-card layout, and hosted API request limits.
+Current result: 105 tests passing. The checks cover the required depth stages, question order, typed and selected answers, back navigation, duplicate-question prevention, unsupported self-worth claims, primary versus follow-up meaning fields, past actions versus future experiments, all required map fields, user-written summary, correction, action branches, user-owned cognitive update, explicit saving, safety routing, identifier redaction, bilingual output, failure handling, competition persistence isolation, visible-map experiment eligibility, responsive experiment-card layout, and hosted API request limits.
 
 ## Competition fit
 

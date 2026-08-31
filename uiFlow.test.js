@@ -409,9 +409,9 @@ test("AI experiments remain editable and retain their original suggestion", () =
 test("smart answers use the fixed event map and one tentative minimal test", () => {
   for (const label of ["发生的线索", "你的解释", "感受", "做了或没有做什么", "带来的结果", "可能的待验证猜测", "仍然不知道什么"]) assert.match(html, new RegExp(label));
   assert.match(server, /requiredMapKeys = \["fact", "meaning", "feeling", "move", "result", "hypothesis", "unknown"\]/);
-  assert.match(server, /hypothesis 只能总结已有确认链条/);
+  assert.match(server, /hypothesis 只根据 protective_purpose 回答/);
   assert.match(server, /experiments 只给 1 个/);
-  assert.match(server, /"continueCondition":"……时继续","fallback":"……时停止或缩小","resultMeaning":"不同结果分别说明什么"/);
+  assert.match(server, /"continueCondition":"……时继续","fallback":"……时停止或缩小","resultMeaning":"不同结果分别支持、削弱或仍无法区分什么"/);
   assert.match(server, /data\.experiments\.slice\(0, 1\)/);
   assert.match(server, /猜测必须明确标为待验证/);
 });
@@ -527,9 +527,9 @@ test("English competition copy stays conversational", () => {
   assert.match(script, /Seven-day distress and daily-life impact/);
   assert.match(script, /Close check-in history/);
   assert.match(html, /id="competitionExamples" role="group"/);
-  assert.match(server, /Cat read what you wrote\. In your words:/);
+  assert.match(server, /Cat read what you wrote\. When/);
   assert.match(server, /does \(\?:this\|that\)/);
-  assert.match(server, /Cat has what happened[\s\S]*What did it seem to mean to you/);
+  assert.match(server, /Cat has the event and your feeling[\s\S]*What did this seem to mean about you or the situation/);
   assert.doesNotMatch(server, /reflection: copy\[0\], question: copy\[0\]/);
   assert.doesNotMatch(`${script}\n${server}`, /Make the prediction observable|add a real fact|Organize my judgment|This reflection ends here|What happened now and later|Choose the closest observable event|EDITABLE HYPOTHESIS/);
 });

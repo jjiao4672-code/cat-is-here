@@ -113,6 +113,22 @@ async function askValidated(prompt, validator) {
 const invalidVisibleValue = /^(?:undefined|null|\[object\s+Object\]|n\/?a|tbd|todo|placeholder|待填写|待补充)$/i;
 const punctuationOnly = /^[\s\p{P}\p{S}]+$/u;
 const missingMapValue = /^(?:尚未确认|还没说到|还不知道|没有明显感受|没有采取行动|not yet confirmed|not asked yet|not yet known|no clear feeling|no action taken)$/i;
+const depthProbeModes = ["evidence", "counterevidence", "alternative", "protective_purpose"];
+const secondaryMeaningModes = new Set(depthProbeModes);
+const reflectionStages = [
+  { targetField: "feeling", mode: "feeling" },
+  { targetField: "meaning", mode: "question" },
+  { targetField: "meaning", mode: "evidence" },
+  { targetField: "meaning", mode: "counterevidence" },
+  { targetField: "meaning", mode: "alternative" },
+  { targetField: "move", mode: "action" },
+  { targetField: "result", mode: "result" },
+  { targetField: "meaning", mode: "protective_purpose" }
+];
+
+function nextReflectionStage(knownFields, knownModes) {
+  return reflectionStages.find(({ targetField, mode }) => mode === "question" ? !knownFields.includes(targetField) : !knownModes.includes(mode));
+}
 
 function cleanVisible(value, label, max = 220) {
   const text = typeof value === "string" ? value.trim() : "";
@@ -128,15 +144,17 @@ function validateNextQuestion(data, context = {}) {
   const knownModes = new Set(context.knownModes || []);
   if (readyForMap) {
     if (["meaning", "feeling", "move", "result"].some((field) => !knownFields.has(field))) throw new Error("行为、感受和结果尚未问全");
+    if (depthProbeModes.some((mode) => !knownModes.has(mode))) throw new Error("依据、反例、替代解释和保护作用尚未问全");
     return { reflection, question: "", options: [], targetField: "", readyForMap: true, mode: "summary" };
   }
   const targetField = String(data?.targetField || "");
   if (!["fact", "meaning", "feeling", "move", "result"].includes(targetField)) throw new Error("下一问目标字段无效");
-  const mode = ["question", "fact_check", "alternative", "feeling", "action", "result", "counterevidence"].includes(String(data?.mode)) ? String(data.mode) : "question";
+  const mode = ["question", "fact_check", "evidence", "alternative", "feeling", "action", "result", "counterevidence", "protective_purpose"].includes(String(data?.mode)) ? String(data.mode) : "question";
   const usefulSecondPass = (targetField === "fact" && mode === "fact_check" && !knownModes.has(mode))
-    || (targetField === "meaning" && ["counterevidence", "alternative"].includes(mode) && !knownModes.has(mode));
+    || (targetField === "meaning" && secondaryMeaningModes.has(mode) && !knownModes.has(mode));
   if (knownFields.has(targetField) && !usefulSecondPass) throw new Error(`字段 ${targetField} 已经回答过，请转向尚未覆盖的部分`);
   if (mode !== "question" && knownModes.has(mode)) throw new Error(`步骤 ${mode} 已经问过`);
+  if (context.expectedStage && (targetField !== context.expectedStage.targetField || mode !== context.expectedStage.mode)) throw new Error(`下一问应进入 ${context.expectedStage.mode} 阶段`);
   const question = cleanVisible(data?.question, "下一问", 120);
   if (targetField === "move" && /(?:你|接下来).{0,8}(?:打算|准备|可以|能)(?:怎么|做什么)|你希望.{0,20}做(?:点|些)?什么|接下来.{0,10}(?:想|希望|打算|准备|可以|能).{0,10}做|(?:what|which).{0,10}(?:can|could|will|would) you do|what would you like to do|do you plan to|are you going to|this week|next time|tomorrow/i.test(question)) {
     throw new Error("行为字段只能问已经做了什么或没有做什么；未来动作留到实验页");
@@ -161,19 +179,23 @@ function validateNextQuestion(data, context = {}) {
   return { reflection, question, options, targetField, readyForMap: false, mode };
 }
 
-function fallbackNextQuestion(language, knownFields = []) {
+function fallbackNextQuestion(language, expectedStage) {
   const en = language === "en";
-  const field = ["meaning", "feeling", "move", "result"].find((item) => !knownFields.includes(item)) || "meaning";
+  const key = expectedStage?.mode || "question";
   const copy = {
-    meaning: en ? ["Cat has what happened.", "What did it seem to mean to you?", "The situation may have changed", "I needed more information"] : ["猫先记下了这件事。", "当时你觉得它说明了什么？", "情况可能发生了变化", "我当时需要更多信息"],
-    feeling: en ? ["Cat has the meaning you gave it.", "What feeling came with that?", "Anxious or tense", "Sad or discouraged"] : ["猫记下了你的想法。", "这样想时，你有什么感受？", "焦虑或紧张", "失落或泄气"],
-    move: en ? ["Cat has your thought and feeling.", "What did you do or stop doing next?", "I took one concrete action", "I did not take an action"] : ["猫记下了你的想法和感受。", "接下来你做了什么，或者停下了什么？", "我做了一个具体动作", "我没有采取行动"],
-    result: en ? ["Cat has what you did next.", "What changed right away, and what happened later?", "Something changed over time", "There was no clear change"] : ["猫记下了你接下来的行动。", "这样做当下带来了什么，后来又怎样？", "前后出现了一些变化", "没有明显变化"]
-  }[field];
-  return { reflection: copy[0], question: copy[1], targetField: field, mode: field === "feeling" ? "feeling" : field === "move" ? "action" : field === "result" ? "result" : "question", readyForMap: false, options: [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }] };
+    question: en ? ["Cat has the event and your feeling.", "What did this seem to mean about you or the situation?", "It felt like a verdict", "I still needed more information"] : ["猫记下了事情和你的感受。", "当时你觉得，这件事说明了你或这段处境的什么？", "它像一个结论", "我当时还需要更多信息"],
+    evidence: en ? ["That is the conclusion Cat heard.", "What observable fact currently supports it?", "A specific response or result", "No clear fact yet"] : ["猫听见了这个判断。", "目前有什么可以观察到的事实支持它？", "一个具体回应或结果", "目前没有明确事实"],
+    counterevidence: en ? ["A conclusion can feel true before all the evidence is in.", "What fact might make this judgment less certain?", "Specific outside feedback", "Something concrete I have done"] : ["一个判断可能在证据还没齐时就显得很真。", "什么事实可能让这个判断没那么确定？", "具体的外部反馈", "我完成过的一件具体事情"],
+    alternative: en ? ["One explanation is not the whole story.", "What other explanation could also fit these facts?", "Timing or circumstances", "I do not know yet"] : ["一种解释还不是全部。", "还有什么解释也可能符合这些事实？", "时间或现实条件", "我还不知道"],
+    action: en ? ["Cat has the judgment and the other possibilities.", "What did that judgment lead you to do or stop doing?", "I took one concrete action", "I held back or stopped"] : ["猫记下了原判断和其他可能。", "这个判断让你做了什么，或者停止了什么？", "我做了一个具体动作", "我退后了或停下了"],
+    result: en ? ["Cat has what you did next.", "What changed right away, and what happened later?", "Something changed over time", "There was no clear change"] : ["猫记下了你接下来的行动。", "这样做当下带来了什么，后来又怎样？", "前后出现了一些变化", "没有明显变化"],
+    protective_purpose: en ? ["This response had a consequence.", "Without assuming it was deliberate, what might this response have helped you avoid?", "More rejection or conflict", "I do not think it was protecting me"] : ["这个反应带来了一个结果。", "不假定这是故意的，它可能帮你避开了什么？", "再次被拒绝或发生冲突", "我不觉得它在保护我"],
+    feeling: en ? ["Cat has what happened.", "What did you feel when this happened?", "Worried or tense", "Sad or discouraged"] : ["猫先记下了这件事。", "这件事发生时，你有什么感受？", "担心或紧张", "难过或失落"]
+  }[key];
+  return { reflection: copy[0], question: copy[1], targetField: expectedStage?.targetField || "meaning", mode: key, readyForMap: false, options: [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }, { id: "unknown", label: en ? "I do not know yet" : "我还不知道" }] };
 }
 
-function validateSynthesis(data, allowedSourceRefs = [], language = "zh", sourceByField = {}, sourceValuesByField = {}) {
+function validateSynthesis(data, allowedSourceRefs = [], language = "zh", sourceByField = {}, sourceValuesByField = {}, probeAnswers = {}) {
   const requiredMapKeys = ["fact", "meaning", "feeling", "move", "result", "hypothesis", "unknown"];
   const mapKeys = [...requiredMapKeys];
   const english = language === "en";
@@ -200,14 +222,35 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
     const text = String(value).trim().replace(/[。.!?？]+$/, "");
     return text.length <= max ? text : text.slice(0, max).replace(/\s+\S*$/, "").trim();
   };
-  if (["fact", "meaning", "feeling", "move"].every((key) => sourceValuesByField[key] && !missingMapValue.test(sourceValuesByField[key]))) {
+  const probe = (mode) => String(probeAnswers[mode] || "").trim();
+  const protectivePurpose = probe("protective_purpose");
+  const deniesProtection = /不觉得.{0,10}(?:保护|避开)|没有.{0,10}(?:保护|作用)|do not think.{0,20}(?:protect|help)|did not protect/i.test(protectivePurpose);
+  if (deniesProtection) {
+    cleanedMap.hypothesis = english ? "Possibly, no protective function was clear in this event. That remains for you to judge." : "这次可能没有明确的保护作用；是否存在其他作用仍待验证，由你判断。";
+  } else if (protectivePurpose && !missingMapValue.test(protectivePurpose)) {
+    cleanedMap.hypothesis = english
+      ? `Possibly, this response helped with: “${brief(protectivePurpose, 90)}”. That function is a guess for you to judge, not a fact.`
+      : `可能是，这个反应当时帮你“${brief(protectivePurpose, 70)}”；这只是作用上的猜想，由你判断，不是事实。`;
+  } else if (["fact", "meaning", "feeling", "move"].every((key) => sourceValuesByField[key] && !missingMapValue.test(sourceValuesByField[key]))) {
     cleanedMap.hypothesis = english
       ? `Possibly: “${brief(cleanedMap.fact, 60)}” → “${brief(cleanedMap.meaning, 65)}” → “${brief(cleanedMap.feeling, 40)}” → “${brief(cleanedMap.move, 50)}”. This still needs testing.`
       : `可能是：发生“${cleanedMap.fact}”时，你把它理解为“${cleanedMap.meaning}”，感到“${cleanedMap.feeling}”，接着“${cleanedMap.move}”；这仍需验证。`.slice(0, 220);
   }
+  let resultHeldBack = false;
+  if (sourceValuesByField.result && sourceValuesByField.meaning && sourceValuesByField.move && !missingMapValue.test(sourceValuesByField.result)) {
+    resultHeldBack = /停止|没(?:有)?做|没有采取|回避|退后|拖延|反复|等待|stopp|no action|did not|avoid|held back|withdrew|kept checking|waited/i.test(sourceValuesByField.move);
+    cleanedMap.result = english
+      ? `${brief(sourceValuesByField.result, 105)}. ${resultHeldBack ? `That response produced no new check of “${brief(sourceValuesByField.meaning, 65)}”, so the judgment may keep feeling true.` : `This is one piece of real-world information, but it does not by itself prove “${brief(sourceValuesByField.meaning, 65)}”.`}`.slice(0, 220)
+      : `${brief(sourceValuesByField.result, 52)}。${resultHeldBack ? `这个反应没有带来能核对“${brief(sourceValuesByField.meaning, 34)}”的新事实，所以原判断可能继续显得很真。` : `这是一条现实信息，但还不能单独证明“${brief(sourceValuesByField.meaning, 34)}”。`}`.slice(0, 220);
+  }
+  const counterevidence = probe("counterevidence");
+  const alternative = probe("alternative");
+  if (counterevidence || alternative) cleanedMap.unknown = english
+    ? `Still unresolved: ${counterevidence || "what would weaken the judgment"}. Another possible explanation: ${alternative || "not yet known"}.`.slice(0, 220)
+    : `仍待核对：${counterevidence || "什么会让原判断没那么确定"}。其他可能解释：${alternative || "还不知道"}。`.slice(0, 220);
   const insight = language === "en"
-    ? `Cat read what you wrote. In your words: ${brief(cleanedMap.fact, 60)}. ${brief(cleanedMap.meaning, 65)}. ${brief(cleanedMap.feeling, 40)}. ${brief(cleanedMap.move, 50)}. ${brief(cleanedMap.result, 60)}. Does that fit?`
-    : `猫看完了。事情是：${brief(cleanedMap.fact, 24)}。你的解释是：${brief(cleanedMap.meaning, 22)}。感受是：${brief(cleanedMap.feeling, 14)}。接着做了：${brief(cleanedMap.move, 22)}。结果是：${brief(cleanedMap.result, 28)}。你看看像不像。`;
+    ? `Cat read what you wrote. When “${brief(cleanedMap.fact, 55)}” seemed to mean “${brief(cleanedMap.meaning, 58)}”, you felt “${brief(cleanedMap.feeling, 35)}” and then “${brief(cleanedMap.move, 45)}”. ${resultHeldBack ? "The result may have left that judgment with too little new evidence." : "The result adds one clue, but does not settle the judgment."} Does that fit?`
+    : `猫看完了。发生“${brief(cleanedMap.fact, 22)}”时，你把它理解为“${brief(cleanedMap.meaning, 20)}”，感到“${brief(cleanedMap.feeling, 12)}”，接着“${brief(cleanedMap.move, 20)}”。${resultHeldBack ? "这个结果可能让原判断继续缺少新的现实核对。" : "这个结果增加了一条线索，但还不能单独证明原判断。"}你看看像不像。`;
   const qualityIssues = [...summaryIssues(insight), ...outputIssues(data), ...metaphorIssues(insight)];
   if (reportVoice.test(insight)) qualityIssues.push("report_voice");
   if (figurativeVoice.test(insight)) qualityIssues.push("figurative_voice");
@@ -223,8 +266,8 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
     insight,
     map: cleanedMap,
     mapSources,
-    alternatives: (Array.isArray(data.alternatives) ? data.alternatives : []).slice(0, 3).map((item) => String(item).slice(0, 160)),
-    evidenceGaps: (Array.isArray(data.evidenceGaps) ? data.evidenceGaps : []).slice(0, 5).map((item) => String(item).slice(0, 180)),
+    alternatives: [...new Set([alternative, ...(Array.isArray(data.alternatives) ? data.alternatives : [])].filter(Boolean).map((item) => String(item).slice(0, 160)))].slice(0, 3),
+    evidenceGaps: [...new Set([counterevidence, ...(Array.isArray(data.evidenceGaps) ? data.evidenceGaps : [])].filter(Boolean).map((item) => String(item).slice(0, 180)))].slice(0, 5),
     concepts: concepts.map((item) => ({
       name: item.name,
       level: item.level === "证据不足" ? "证据不足" : "部分符合",
@@ -239,7 +282,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   return synthesis;
 }
 
-const isCoreFieldAnswer = (answer) => answer?.targetField && !(answer.targetField === "meaning" && ["alternative", "counterevidence"].includes(answer.mode));
+const isCoreFieldAnswer = (answer) => ["fact", "meaning", "feeling", "move", "result"].includes(answer?.targetField) && !(answer.targetField === "meaning" && secondaryMeaningModes.has(answer.mode));
 
 function validateClosingFeedback(data, allowedDates) {
   const forbidden = /你太棒|坚持就是胜利|失败者|因为你懒惰|你不够努力|你失败了|已经治愈|问题已经解决|提升自信|变得自信|成为更好的自己|你(?:就是|是)(?:一个)?.{0,12}(?:的人|人格)/;
@@ -310,7 +353,7 @@ async function handleApi(req, res) {
       const text = JSON.stringify({ event: body.event || body.note || "", eventChoice: body.eventChoice || "", priorAnswers: body.priorAnswers || [] });
       if (hasSafetyLanguage(text)) return send(res, 400, { error: "这段内容可能关系到安全，请先使用现实支持" });
       const language = body.language === "en" ? "en" : "zh";
-      const round = Math.max(1, Math.min(8, Number(body.round) || 1));
+      const round = Math.max(1, Math.min(10, Number(body.round) || 1));
       const priorAnswers = (Array.isArray(body.priorAnswers) ? body.priorAnswers : []).slice(0, 12).map((answer) => ({ id: String(answer?.id || ""), question: String(answer?.question || "").slice(0, 160), targetField: String(answer?.targetField || ""), mode: String(answer?.mode || "question"), answer: String(answer?.answer || "").slice(0, 320), unknown: Boolean(answer?.unknown) }));
       const knownFields = [...new Set([...(body.eventIsSpecific ? ["fact"] : []), ...priorAnswers.filter(isCoreFieldAnswer).map((answer) => answer.targetField)])];
       const knownModes = [...new Set(priorAnswers.map((answer) => answer.mode))];
@@ -323,32 +366,30 @@ async function handleApi(req, res) {
       if (!knownFields.includes("fact")) return send(res, 200, language === "en"
         ? { reflection: "Cat only has a broad category so far.", question: "What is one specific thing that happened recently?", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "I cannot recall one yet" }] }
         : { reflection: "猫现在只有一个大致类别，还不知道具体发生了什么。", question: "最近具体发生了哪一件事？", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "现在还想不起来" }] });
-      if (!["meaning", "feeling", "move", "result"].some((field) => knownFields.includes(field))) {
+      const expectedStage = nextReflectionStage(knownFields, knownModes);
+      if (!expectedStage) return send(res, 200, language === "en"
+        ? { reflection: "Cat has enough to pause. Your own summary comes next.", question: "", targetField: "", mode: "summary", readyForMap: true, options: [] }
+        : { reflection: "猫先停在这里。接下来由你自己总结。", question: "", targetField: "", mode: "summary", readyForMap: true, options: [] });
+      if (expectedStage.mode === "feeling") {
         const fact = String([...priorAnswers].reverse().find((answer) => answer.targetField === "fact")?.answer || eventText).slice(0, 120);
         return send(res, 200, language === "en"
           ? { reflection: `Cat noted this event: ${fact}`, question: "What did you feel when this happened?", targetField: "feeling", mode: "feeling", readyForMap: false, options: [{ id: "anxious", label: "Worried or tense" }, { id: "sad", label: "Sad or discouraged" }, { id: "unknown", label: "I do not know yet" }] }
           : { reflection: `猫先记下这件事：${fact}`, question: "这件事发生时，你有什么感受？", targetField: "feeling", mode: "feeling", readyForMap: false, options: [{ id: "anxious", label: "担心或紧张" }, { id: "sad", label: "难过或失落" }, { id: "unknown", label: "我还不知道" }] });
       }
-      if (selfWorth && !knownModes.includes("counterevidence")) {
-        const claim = selfWorthMatch[0];
-        return send(res, 200, language === "en"
-          ? { reflection: `“${claim}” is a judgment about yourself, not an established fact.`, question: "What fact would make you willing to revise that judgment?", targetField: "meaning", mode: "counterevidence", readyForMap: false, options: [{ id: "external", label: "Specific outside feedback" }, { id: "action", label: "Something concrete I can complete" }, { id: "unknown", label: "I do not know yet" }] }
-          : { reflection: `“${claim}”是对自己的判断，不是已经证明的事实。`, question: "什么事实出现时，你会愿意改变这个判断？", targetField: "meaning", mode: "counterevidence", readyForMap: false, options: [{ id: "external", label: "收到具体的外部反馈" }, { id: "action", label: "完成一个自己能控制的动作" }, { id: "unknown", label: "我还不知道" }] });
-      }
       const selfWorthInstruction = selfWorth
-        ? "用户已明确表达自我否定。完成反证问题后，再请用户自己提出其他可能解释；不要限定为求职原因。"
+        ? `用户已明确表达自我否定“${selfWorthMatch[0]}”。在 evidence 阶段明确区分判断和事实；完成反证后，再请用户自己提出其他可能解释，不要限定为求职原因。`
         : "用户没有表达自我价值否定。复述和问题中禁止加入‘不够好’‘能力不行’‘失败者’或相同含义。";
       const prompt = `${catRules}
 ${catLiteraryStyle}
 输出语言：${outputLanguage}
-任务：这是第 ${round} 轮，只处理用户眼前的一件事，最多 8 轮但不要为了凑轮数提问。事件：${JSON.stringify(body.event || body.note || "")}。宽泛选项仅作入口：${JSON.stringify(body.eventChoice || "")}。此前逐轮确认：${JSON.stringify(priorAnswers)}。已覆盖字段：${JSON.stringify(knownFields)}。已走过步骤：${JSON.stringify(knownModes)}。
-苏格拉底顺序：选项不是结论；把已经发生的事实和还没发生的猜想分开；请用户先自己提出可能推翻判断的事实或替代解释，想不到时才给可能性；再问感受、行动和当下与后来的结果。短复述只能改写用户刚刚明确说过的内容，不能补写情绪、想法、动作或结果。${selfWorthInstruction}
-每次只返回一句短复述和一个下一问，下一问必须依赖最新回答且不得重复。目标字段只能是 fact、meaning、feeling、move、result；mode 可为 question、fact_check、alternative、feeling、action、result、counterevidence。随后补 feeling、action 和 result。move 只问事情发生后用户已经做了什么或没有做什么；地图完成前禁止问用户希望、打算、可以或将会做什么，未来动作留到实验页。给 1-3 个互斥口语选项，同时鼓励自由输入；允许“还不知道”。不得诊断、追溯童年或人格、替第三方断言动机，也不得一次问两个问题。只有关键事实已明确，且行动及结果也已问过时，才令 readyForMap 为 true；前端随后要求用户自己总结。只返回 JSON：{"reflection":"...","question":"...？","targetField":"meaning","mode":"question","readyForMap":false,"options":[{"id":"a","label":"..."},{"id":"b","label":"..."},{"id":"unknown","label":"还不知道"}]}`;
+任务：这是第 ${round} 轮，只处理用户眼前的一件事。事件：${JSON.stringify(body.event || body.note || "")}。宽泛选项仅作入口：${JSON.stringify(body.eventChoice || "")}。此前逐轮确认：${JSON.stringify(priorAnswers)}。已覆盖字段：${JSON.stringify(knownFields)}。已走过步骤：${JSON.stringify(knownModes)}。本轮必须进入：${JSON.stringify(expectedStage)}。
+苏格拉底顺序固定为：具体事实 → 感受 → 用户作出的判断 → 支持判断的可观察依据 → 可能推翻判断的事实 → 用户自己提出其他解释 → 判断带来的既有行动或回避 → 当下和后来的结果 → 这个反应可能帮助避开什么。选项不是结论。evidence 问“目前凭什么这样判断”，counterevidence 问什么事实会让判断没那么确定，alternative 先让用户自己找其他解释，protective_purpose 只能问可能作用并允许“它没有在保护我”，不能断言用户故意这样做。短复述只使用用户刚刚明确说过的内容，并在一句内指出当前连接，不能补写情绪、想法、动作、目的或结果。${selfWorthInstruction}
+每次只返回一句短复述和一个下一问，下一问必须依赖最新回答且不得重复。targetField 必须严格使用本轮指定值；mode 必须严格使用本轮指定值。move 只问事情发生后用户已经做了什么或没有做什么；地图完成前禁止问用户希望、打算、可以或将会做什么，未来动作留到实验页。给 1-3 个互斥口语选项，同时鼓励自由输入；允许“还不知道”。不得诊断、追溯童年或人格、替第三方断言动机，也不得一次问两个问题。只有全部阶段走完才令 readyForMap 为 true；前端随后要求用户自己总结。只返回 JSON：{"reflection":"...","question":"...？","targetField":"${expectedStage.targetField}","mode":"${expectedStage.mode}","readyForMap":false,"options":[{"id":"a","label":"..."},{"id":"b","label":"..."},{"id":"unknown","label":"还不知道"}]}`;
       try {
-        return send(res, 200, await askValidated(prompt, (data) => validateNextQuestion(data, { language, previousQuestions, knownFields, knownModes, sourceText })));
+        return send(res, 200, await askValidated(prompt, (data) => validateNextQuestion(data, { language, previousQuestions, knownFields, knownModes, sourceText, expectedStage })));
       } catch (error) {
         // A follow-up must remain answerable even when the model or network fails mid-session.
-        if (Object.prototype.hasOwnProperty.call(body, "round")) return send(res, 200, fallbackNextQuestion(language, knownFields));
+        if (Object.prototype.hasOwnProperty.call(body, "round")) return send(res, 200, fallbackNextQuestion(language, expectedStage));
         throw error;
       }
     }
@@ -366,14 +407,17 @@ ${catLiteraryStyle}
         if (answer.unknown) sourceValuesByField[answer.targetField] = body.language === "en" ? "Not yet known" : "还不知道";
         else if (String(answer.answer || "").trim()) sourceValuesByField[answer.targetField] = String(answer.answer).trim();
       });
+      const probeAnswers = Object.fromEntries((Array.isArray(body.answers) ? body.answers : [])
+        .filter((answer) => depthProbeModes.includes(answer?.mode))
+        .map((answer) => [answer.mode, answer.unknown ? (body.language === "en" ? "Not yet known" : "还不知道") : String(answer.answer || "").trim()]));
       const outputLanguage = body.language === "en" ? `All user-visible JSON values must be in plain English. Use the proper name “Cat”, never “the Cat”. insight must begin with “Cat read what you wrote.” and end by asking “Does that fit?” Use “possibly”, “may”, “might”, or “to test” for uncertainty. Use “Not yet confirmed” instead of Chinese fallback text. Keep every field editable and avoid Chinese characters.` : "全部用户可见字段使用中文。";
       const prompt = `${catRules}
 ${learningRules}
 ${catLiteraryStyle}
 输出语言：${outputLanguage}
 任务：综合“${theme}”主题，但保留多个解释。基础题结构化答案：${JSON.stringify(body.stateAnswers || {})}。基础整理结果：${JSON.stringify(body.result)}。用户补充：${JSON.stringify(body.notes || {})}。入口描述：${JSON.stringify(body.note || "")}。补充问答：${JSON.stringify(body.answers || [])}。当前地图（修订时使用）：${JSON.stringify(body.currentMap || {})}。
-输出一张可由用户修改或否定的单事件问题地图，固定顺序是：发生了什么 → 我当时怎么想 → 我有什么感受 → 我做了什么或没做什么 → 结果怎样。result 内部用“当下：……；后来：……”区分。主线之后才是一个明确标为“可能”的待验证猜测和现实仍不知道什么。每个非缺失字段都必须在 mapSources 中引用以下真实来源 ID：${JSON.stringify(sourceRefs)}。没有问到的字段写“还没说到”（英文 Not asked yet）；已经问过但用户不知道或现实不能确定的字段写“还不知道”（英文 Not yet known）；“没有明显感受”和“没有采取行动”是有效回答，不能写成缺失。不得用 undefined、null、空白、标点或模板占位符。hypothesis 只能总结已有确认链条，必须包含“可能”“也许”“待验证”“尚不能确定”或对应英文；不得追溯童年、原生家庭、依恋类型、人格、疾病或潜意识，不得诊断、读心或替第三方下结论。用户明确说出的事实和感受直接承认，不虚构或扩写隐藏情绪。insight 用 2-3 个自然短句，写“猫有一个猜想，你看看像不像”，只复述输入和 map 字段。concepts 返回空数组。experiments 只给 1 个备用建议，且只有用户想不到动作时才展示：低成本、可停止、完全属于用户可控制的行为，不秘密试探或操纵他人。动作必须取得一条能区分至少两种解释的现实信息，不能只记录情绪或想法；关系情境在安全时优先使用清楚、不指责的沟通或其他能获得真实反馈的动作。若当下不能执行，可以先完成准备，但必须同时写清具体执行时间，不能停在“写草稿但不发送”。只返回 JSON：{"insight":"...","map":{"fact":"...","meaning":"...","feeling":"...","move":"...","result":"当下：……；后来：……","hypothesis":"可能……，仍需验证","unknown":"还不知道……"},"mapSources":{"fact":["ENTRY_01"],"meaning":["ROUND_1"],"feeling":["ROUND_2"],"move":["ROUND_3"],"result":["ROUND_4"],"hypothesis":["ENTRY_01","ROUND_1"],"unknown":["ENTRY_01"]},"alternatives":["..."],"evidenceGaps":["..."],"concepts":[],"experiments":[{"id":"...","title":"...","prediction":"...","action":"第一步：...","observableOutcome":"观察……；记录……","continueCondition":"……时继续","fallback":"……时停止或缩小","resultMeaning":"不同结果分别说明什么","needsPattern":false}]}`;
-      return send(res, 200, await askValidated(prompt, (data) => validateSynthesis(data, sourceRefs, body.language, sourceByField, sourceValuesByField)));
+输出一张可由用户修改或否定的单事件问题地图，不要把答案逐项抄写成清单。固定顺序仍是：发生了什么 → 我当时怎么想 → 我有什么感受 → 我做了什么或没做什么 → 结果怎样。meaning 写用户在这件事中的判断，不把它写成事实；result 在忠实保留用户回答的基础上，指出判断如何影响行动、行动是否让判断继续缺少现实检验，形成单事件内的循环。主线之后才是待验证猜测和未知：hypothesis 只根据 protective_purpose 回答，说明这个反应“可能”暂时帮用户避开什么或完成什么；如果用户否认保护作用，就保留否定，不强行解释。unknown 汇总 counterevidence、alternative 和仍需现实区分的部分。用户给出的依据、反例、替代解释和保护作用是：${JSON.stringify(probeAnswers)}。每个非缺失字段都必须在 mapSources 中引用以下真实来源 ID：${JSON.stringify(sourceRefs)}。没有问到的字段写“还没说到”（英文 Not asked yet）；已经问过但用户不知道或现实不能确定的字段写“还不知道”（英文 Not yet known）；“没有明显感受”和“没有采取行动”是有效回答，不能写成缺失。不得用 undefined、null、空白、标点或模板占位符。hypothesis 必须包含“可能”“也许”“待验证”“尚不能确定”或对应英文；不得追溯童年、原生家庭、依恋类型、人格、疾病或潜意识，不得诊断、读心或替第三方下结论。用户明确说出的事实和感受直接承认，不虚构隐藏情绪。insight 用 2-3 个自然短句，指出这次“事实—判断—行动—结果”的连接，再请用户判断像不像；不要只按字段复述。concepts 返回空数组。experiments 只给 1 个备用建议，且只有用户想不到动作时才展示：低成本、可停止、完全属于用户可控制的行为，不秘密试探或操纵他人。动作必须取得一条能区分原判断和 alternative 的现实信息，目标是增加判断依据，不是证明用户够好，也不把他人的回应当作用户价值。关系情境在安全时优先使用清楚、不指责的沟通。若当下不能执行，可以先完成准备，但必须同时写清具体执行时间，不能停在“写草稿但不发送”。只返回 JSON：{"insight":"...","map":{"fact":"...","meaning":"...","feeling":"...","move":"...","result":"当下：……；后来：……；循环：……","hypothesis":"可能……，由你判断","unknown":"反例、替代解释和待验证部分"},"mapSources":{"fact":["ENTRY_01"],"meaning":["ROUND_1"],"feeling":["ROUND_2"],"move":["ROUND_3"],"result":["ROUND_4"],"hypothesis":["ROUND_8"],"unknown":["ROUND_3","ROUND_4"]},"alternatives":["用户提出的替代解释"],"evidenceGaps":["仍需核对的事实"],"concepts":[],"experiments":[{"id":"...","title":"...","prediction":"...","action":"第一步：...","observableOutcome":"观察能区分至少两种解释的事实；记录……","continueCondition":"……时继续","fallback":"……时停止或缩小","resultMeaning":"不同结果分别支持、削弱或仍无法区分什么","needsPattern":false}]}`;
+      return send(res, 200, await askValidated(prompt, (data) => validateSynthesis(data, sourceRefs, body.language, sourceByField, sourceValuesByField, probeAnswers)));
     }
     if (req.url === "/api/cycle/closing-feedback") {
       const text = JSON.stringify({ cycle: body.cycle || {}, checkins: body.checkins || [] });
