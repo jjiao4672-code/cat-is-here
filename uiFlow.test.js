@@ -338,6 +338,14 @@ test("fixed arrow rails do not steal clicks and stay above the notebook hotspot"
   assert.match(css, /Uiverse heavy-emu-25/);
   assert.match(css, /primary-button,.secondary-button,.ghost-button,.confirm-actions button/);
   assert.match(css, /border-bottom-width:6px/);
+  assert.match(css, /question-cta-prev\{position:absolute;right:calc\(100% \+ 12px\)\}/);
+  assert.match(css, /question-cta-next\{position:absolute;left:calc\(100% \+ 12px\)\}/);
+});
+
+test("a lone experiment card fills the row while two cards share it", () => {
+  const css = fs.readFileSync("styles.css", "utf8");
+  assert.match(css, /\.experiment-options\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css, /\.experiment-options:not\(:has\(>\.experiment-option:nth-child\(2\)\)\)\{grid-template-columns:minmax\(0,1fr\)\}/);
 });
 
 test("an active seven-day cycle offers a confirmed restart without clearing saved maps", () => {
