@@ -741,6 +741,7 @@ textarea::placeholder,input::placeholder{color:#817667;opacity:1}
   border-radius:var(--control-radius);
   padding:0 12px;
   letter-spacing:.04em;
+  white-space:nowrap;
 }
 .question-cta span{padding:0 10px 0 0;letter-spacing:.08em;text-transform:none}
 .question-cta-prev span{padding:0 0 0 10px}

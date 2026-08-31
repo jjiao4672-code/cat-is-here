@@ -340,6 +340,7 @@ test("fixed arrow rails do not steal clicks and stay above the notebook hotspot"
   assert.match(css, /border-bottom-width:6px/);
   assert.match(css, /question-cta-prev\{position:absolute;right:calc\(100% \+ 12px\)\}/);
   assert.match(css, /question-cta-next\{position:absolute;left:calc\(100% \+ 12px\)\}/);
+  assert.match(css, /letter-spacing:\.04em;\s*white-space:nowrap/);
 });
 
 test("a lone experiment card fills the row while two cards share it", () => {
