@@ -89,7 +89,7 @@ Do not put a real key in browser code, source control, or a public setup form. H
 npm test
 ```
 
-Current result: 98 tests passing. The checks cover question order, typed and selected answers, duplicate-question prevention, unsupported self-worth claims, all required map fields, user-written summary, correction, action branches, user-owned cognitive update, explicit saving, safety routing, identifier redaction, bilingual output, failure handling, competition persistence isolation, and hosted API request limits.
+Current result: 102 tests passing. The checks cover question order, typed and selected answers, back navigation, duplicate-question prevention, unsupported self-worth claims, primary versus follow-up meaning fields, past actions versus future experiments, all required map fields, user-written summary, correction, action branches, user-owned cognitive update, explicit saving, safety routing, identifier redaction, bilingual output, failure handling, competition persistence isolation, and hosted API request limits.
 
 ## Competition fit
 
