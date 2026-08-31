@@ -1237,17 +1237,18 @@ let interviewSummary = "";
 
   function renderInterviewQuestion(question) {
     interviewQuestion = question;
+    const factCheck = question.mode === "fact_check";
     setMapScene(false);
     hideDeskViews();
     $("#resultPanel").classList.add("hidden");
     $("#questionPanel").classList.add("hidden");
     $("#followupPanel").classList.remove("hidden", "interview-error");
-    $("#followupKicker").textContent = interviewSynthetic ? (COMPETITION_EN ? `SYNTHETIC EXAMPLE · QUESTION ${interviewRound + 1}` : `合成示例 · 第 ${interviewRound + 1} 问`) : (COMPETITION_EN ? `LIVE AI · QUESTION ${interviewRound + 1}` : `实时 AI · 第 ${interviewRound + 1} 问`);
+    $("#followupKicker").textContent = factCheck ? (COMPETITION_EN ? "ONE SPECIFIC EVENT" : "先说具体一点") : interviewSynthetic ? (COMPETITION_EN ? `SYNTHETIC EXAMPLE · QUESTION ${interviewRound + 1}` : `合成示例 · 第 ${interviewRound + 1} 问`) : (COMPETITION_EN ? `LIVE AI · QUESTION ${interviewRound + 1}` : `实时 AI · 第 ${interviewRound + 1} 问`);
     $(".followup-mark").textContent = COMPETITION_EN ? "Cat" : "猫";
     $("#followupBackButton span").textContent = COMPETITION_EN ? "Back" : "上一题";
     $("#followupReflection").textContent = safeVisible(question.reflection, true);
     $("#followupTitle").textContent = safeVisible(question.question, true);
-    $("#followupHint").textContent = COMPETITION_EN ? "Choose the closest answer, or say it in your own words." : "选一个最接近的。也可以按自己的话说。";
+    $("#followupHint").textContent = factCheck ? (COMPETITION_EN ? "Write what happened first. If no moment comes to mind, use the choice below." : "先写具体发生了什么；暂时想不起，可以选下面。") : COMPETITION_EN ? "Choose the closest answer, or say it in your own words." : "选一个最接近的。也可以按自己的话说。";
     const options = $("#followupOptions"); options.innerHTML = "";
     selectedFollow = null;
     (question.options || []).forEach((option) => {
@@ -1256,13 +1257,14 @@ let interviewSummary = "";
       options.append(button);
     });
     const freeWrap = $("#followupNote").closest(".free-note-wrap"); freeWrap.classList.remove("hidden");
-    freeWrap.querySelector("label").textContent = COMPETITION_EN ? "None of these fit. I’ll write my own." : "都不太像，我自己说";
+    factCheck ? options.before(freeWrap) : options.after(freeWrap);
+    freeWrap.querySelector("label").textContent = factCheck ? (COMPETITION_EN ? "What happened, in your own words" : "用自己的话说这件事") : COMPETITION_EN ? "None of these fit. I’ll write my own." : "都不太像，我自己说";
     const savedAnswer = String(question.savedAnswer || "");
     const savedOption = (question.options || []).find((option) => option.label === savedAnswer);
     selectedFollow = savedOption?.id || null;
     [...options.children].forEach((item, index) => item.classList.toggle("selected", Boolean(savedOption && question.options[index].id === savedOption.id)));
     $("#followupNote").value = savedOption ? "" : savedAnswer;
-    $("#followupNote").placeholder = "";
+    $("#followupNote").placeholder = factCheck ? (COMPETITION_EN ? "For example: Yesterday my manager said…" : "例如：昨天主管说……；这周对方连续两次……") : "";
     $("#followupNextButton").classList.remove("hidden");
     $("#followupNextButton").disabled = !selectedFollow && !$("#followupNote").value.trim();
     $("#followupNextButton span").textContent = COMPETITION_EN ? "Send this answer" : "发送这条回答";

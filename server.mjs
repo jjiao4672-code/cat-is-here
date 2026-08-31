@@ -364,8 +364,8 @@ async function handleApi(req, res) {
       const selfWorthMatch = sourceText.match(/(?:我|自己).{0,8}(?:不够好|能力不行|没能力|很失败|是失败者)|I(?:'m| am).{0,8}(?:not good enough|a failure|incapable)/i);
       const selfWorth = Boolean(selfWorthMatch);
       if (!knownFields.includes("fact")) return send(res, 200, language === "en"
-        ? { reflection: "Cat only has a broad category so far.", question: "What is one specific thing that happened recently?", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "I cannot recall one yet" }] }
-        : { reflection: "猫现在只有一个大致类别，还不知道具体发生了什么。", question: "最近具体发生了哪一件事？", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "现在还想不起来" }] });
+        ? { reflection: "Before interpreting it, Cat needs one thing that actually happened.", question: "What recent moment started this feeling? One sentence is enough.", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "I genuinely cannot recall one yet" }] }
+        : { reflection: "先不急着解释。猫需要一件真的发生过的事。", question: "最近哪一件事让你开始难受？写一句就够了。", targetField: "fact", mode: "fact_check", readyForMap: false, options: [{ id: "unknown", label: "现在确实想不起具体的一件事" }] });
       const expectedStage = nextReflectionStage(knownFields, knownModes);
       if (!expectedStage) return send(res, 200, language === "en"
         ? { reflection: "Cat has enough to pause. Your own summary comes next.", question: "", targetField: "", mode: "summary", readyForMap: true, options: [] }

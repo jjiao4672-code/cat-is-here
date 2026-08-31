@@ -60,7 +60,7 @@ test("going back restores an answer that can be submitted without reselecting it
 
 test("user claims stay grounded in typed or confirmed answers", () => {
   assert.match(server, /!knownFields\.includes\("fact"\)/);
-  assert.match(server, /最近具体发生了哪一件事/);
+  assert.match(server, /最近哪一件事让你开始难受？写一句就够了/);
   assert.match(server, /sourceValuesByField\[answer\.targetField\]/);
   assert.match(server, /cleanedMap\[key\] = cleanVisible\(sourceValuesByField\[key\]/);
   assert.match(server, /const refs = \(sourceByField\[key\] \|\| \[\]\)/);
@@ -96,6 +96,15 @@ test("the first follow-up after a concrete event asks for feeling before interpr
   assert.match(server, /expectedStage\.mode === "feeling"/);
   assert.match(server, /这件事发生时，你有什么感受/);
   assert.match(server, /targetField: "feeling", mode: "feeling"/);
+});
+
+test("a broad category asks for one concrete event without pretending to be Live AI", () => {
+  assert.match(server, /先不急着解释。猫需要一件真的发生过的事/);
+  assert.match(server, /最近哪一件事让你开始难受？写一句就够了/);
+  assert.match(script, /const factCheck = question\.mode === "fact_check"/);
+  assert.match(script, /factCheck \? \(COMPETITION_EN \? "ONE SPECIFIC EVENT" : "先说具体一点"\)/);
+  assert.match(script, /factCheck \? options\.before\(freeWrap\) : options\.after\(freeWrap\)/);
+  assert.match(script, /用自己的话说这件事/);
 });
 
 test("all map fields are asked before summary and answered placeholders are repaired", () => {
