@@ -202,6 +202,8 @@ test("the user judges the observation before Cat summarizes it", () => {
 test("saving is explicit, structured, and disabled in competition", () => {
   assert.equal((html.match(/name="journeySave"/g) || []).length, 3);
   assert.match(script, /choice === "remember" && !DEMO_MODE/);
+  assert.match(script, /rememberForCat"\)\.closest\("label"\)\.classList\.toggle\("hidden", COMPETITION_MODE\)/);
+  assert.match(script, /save-choices"\)\.classList\.toggle\("hidden", COMPETITION_MODE\)/);
   assert.match(script, /if \(rememberForCat\) \{\s*await putRecord\(record\)/);
   assert.match(script, /const DEMO_MODE = RELATIONSHIP_DEMO \|\| COMPETITION_MODE/);
   assert.match(html, /不保存完整对话/);
@@ -216,6 +218,7 @@ test("invalid placeholders and silent fallback are blocked at both boundaries", 
   assert.match(script, /mapRequestState = "fallback-offered"/);
   assert.match(script, /No fixed question has been shown/);
   assert.match(script, /Continue with synthetic example/);
+  assert.match(server, /if \(!options\.some\(\(\{ label \}\) => label === unknownLabel\)\) options\.push/);
 });
 
 test("competition remains bilingual and persistence-free", () => {

@@ -539,6 +539,7 @@ test("English competition copy stays conversational", () => {
   assert.match(script, /Cat · Example input · Nothing saved/);
   assert.match(script, /A GUESS YOU CAN CHANGE/);
   assert.match(script, /setAttribute\("aria-label", "Example input"\)/);
+  assert.match(script, /setAttribute\("aria-label", "Cat's temporary understanding and Adlerian lens"\)/);
   assert.match(script, /Seven-day distress and daily-life impact/);
   assert.match(script, /Close check-in history/);
   assert.match(html, /id="competitionExamples" role="group"/);

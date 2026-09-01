@@ -197,7 +197,10 @@ function fallbackNextQuestion(language, expectedStage) {
     protective_purpose: en ? ["This response had a consequence.", "Without assuming it was deliberate, what might this response have helped you avoid?", "An outcome I did not feel ready to face", "I do not think it was protecting me"] : ["这个反应带来了一个结果。", "不假定这是故意的，它可能帮你避开了什么？", "一个当时还没准备好面对的结果", "我不觉得它在保护我"],
     feeling: en ? ["Cat has what happened.", "What did you feel when this happened?", "Worried or tense", "Sad or discouraged"] : ["猫先记下了这件事。", "这件事发生时，你有什么感受？", "担心或紧张", "难过或失落"]
   }[key];
-  return { reflection: copy[0], question: copy[1], targetField: expectedStage?.targetField || "meaning", mode: key, readyForMap: false, options: [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }, { id: "unknown", label: en ? "I do not know yet" : "我还不知道" }] };
+  const unknownLabel = en ? "I do not know yet" : "我还不知道";
+  const options = [{ id: "fallback_a", label: copy[2] }, { id: "fallback_b", label: copy[3] }];
+  if (!options.some(({ label }) => label === unknownLabel)) options.push({ id: "unknown", label: unknownLabel });
+  return { reflection: copy[0], question: copy[1], targetField: expectedStage?.targetField || "meaning", mode: key, readyForMap: false, options };
 }
 
 function validateSynthesis(data, allowedSourceRefs = [], language = "zh", sourceByField = {}, sourceValuesByField = {}, probeAnswers = {}) {
