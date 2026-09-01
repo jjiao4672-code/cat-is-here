@@ -41,7 +41,7 @@ In normal mode, nothing becomes a long-term record until the user explicitly cho
 - Repeated questions and repeated fields are rejected, except one useful second pass for a fact check, alternative explanation, or counterevidence.
 - The service cannot introduce “not good enough,” “incapable,” or equivalent self-worth language unless the user already wrote it.
 - Action and immediate or later result must be asked before a complete map can be built.
-- The interview stops when the needed fields are covered and never exceeds eight rounds.
+- The interview stops when the needed fields are covered and never exceeds ten questions.
 - The user writes a summary before Cat reflects it.
 - Generated output is parsed as JSON and validated up to three times. Failed output receives a bounded repair instruction that cannot change the source facts.
 - A mid-interview generation failure can use a deterministic question for the next missing field. It cannot generate a completed map.
@@ -68,6 +68,6 @@ If a follow-up still cannot pass, the server returns a deterministic question fo
 - Browser-local storage is not an encrypted medical-record system.
 - Provider terms, retention, data-processing agreements, and applicable law require review before processing real sensitive health information.
 - The custom font and generated-image provider licenses still need final documentation before public release.
-- The hosted public demo and live-model quality sample are not complete.
+- The hosted public demo is available, but it has not received a large, independent live-model quality evaluation.
 
 The competition walkthrough may use labeled synthetic input while exercising the actual model path. Public use with real personal data remains out of scope.

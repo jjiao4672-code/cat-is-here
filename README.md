@@ -19,7 +19,7 @@ The current competition flow is:
 1. Describe one event with an option, free text, or both.
 2. If the entry is broad, name one concrete event.
 3. Name the feeling before Cat explores interpretation, action, and result.
-4. Answer one tailored question per screen. The interview stops when the needed fields are present and never exceeds eight rounds.
+4. Answer one tailored question per screen. The interview stops when the needed fields are present and never exceeds ten questions.
 5. Write your own short summary and correct Cat's reflection.
 6. Review an editable Problem Map: event, interpretation, feeling, action or inaction, immediate and later result, a tentative guess, and what remains unknown.
 7. Propose one small action. Cat shows one suggestion only when asked.

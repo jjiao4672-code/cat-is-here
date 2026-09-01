@@ -1,6 +1,6 @@
 # Cat Is Here: four-minute demo draft
 
-Open `https://cat-is-here.onrender.com/?demo=competition&lang=en`. Record a successful run in advance. Keep a short, separate failure clip as backup.
+Open `https://cat-is-here.onrender.com/?demo=competition&lang=en`. Record a successful run in advance. Use clean cuts to stay under four minutes, and do not present the edited sequence as an uninterrupted run. Keep a short, separate failure clip as backup.
 
 ## 0:00 to 0:25
 
@@ -12,7 +12,7 @@ Show the landing screen and click **I'm ready**.
 
 Open **Use an example** and choose Relationship. Point out that the example fills only an editable opening event.
 
-Submit it. Answer the questions naturally. The live path asks for a concrete event when needed, asks about feeling early, then follows the confirmed answers through interpretation, action, and result. It may finish before eight questions and cannot go beyond eight.
+Submit it. Answer the questions naturally. The live path asks for a concrete event when needed, asks about feeling early, then follows the confirmed answers through interpretation, action, and result. It may finish early and cannot go beyond ten questions.
 
 Say:
 

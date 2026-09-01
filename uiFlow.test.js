@@ -187,7 +187,7 @@ test("competition presets show two distinct mechanisms without promising an idea
   assert.match(script, /even while afraid, you could take the part you controlled and ask reality for information/);
   assert.match(script, /synthetic example input/);
   assert.match(demoScript, /0:25 to 2:35[\s\S]*choose Relationship[\s\S]*2:35 to 2:55[\s\S]*Job search example[\s\S]*2:55 to 3:35[\s\S]*3:35 to 4:00/);
-  assert.match(demoScript, /cannot go beyond eight[\s\S]*summary screen/);
+  assert.match(demoScript, /cannot go beyond ten[\s\S]*summary screen/);
   assert.ok(demoScript.indexOf("choose Relationship") < demoScript.indexOf("Job search example"));
   assert.doesNotMatch(`${script}\n${demoScript}`, /you have become yourself|你已经成为了你自己/i);
 });

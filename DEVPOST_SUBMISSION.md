@@ -6,7 +6,7 @@ Cat Is Here
 
 ## Tagline
 
-Turn one anxious guess into a small action that can bring back real information.
+Move from repeated guessing to one small real-world test.
 
 ## Try it out
 
@@ -24,7 +24,7 @@ Cat Is Here gives that moment a clear shape. The goal is modest: look at one eve
 
 The user starts with one recent event. They can choose a broad option, type in their own words, or do both. If the entry is broad, Cat first asks for a concrete event. The second step asks about feeling. From there, AI selects one next question at a time from the answers the user has confirmed.
 
-The interview covers interpretation, feeling, action or inaction, and the immediate and later result. It stops when those pieces are clear and has an eight-round limit. The user then writes what they see in the event before Cat offers a short reflection.
+The interview covers interpretation, feeling, action or inaction, and the immediate and later result. It stops when those pieces are clear and has a ten-question limit. The user then writes what they see in the event before Cat offers a short reflection.
 
 The result is an editable Problem Map. Facts stay separate from interpretations. Guesses remain marked as guesses. Unknowns stay visible. If the user explicitly writes a self-critical judgment such as “my ability is not enough,” Cat asks what fact could revise it. Cat does not introduce that judgment on its own.
 
@@ -60,7 +60,7 @@ Model reliability was another problem. Generated JSON can be empty, malformed, r
 - User-written summary before AI synthesis.
 - Editable maps and experiments with explicit uncertainty.
 - Competition mode with no Local Storage or IndexedDB writes.
-- 94 passing automated checks.
+- 114 passing automated checks.
 - Chinese and English flows for desktop and mobile layouts.
 
 ## What we learned
