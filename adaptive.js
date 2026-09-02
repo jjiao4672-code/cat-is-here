@@ -7,6 +7,7 @@
   const params = new URLSearchParams(location.search);
   const COMPETITION_MODE = params.get("demo") === "competition";
   let HOSTED_COMPETITION = COMPETITION_MODE && ["1", "true", "yes"].includes(String(params.get("hosted") || "").toLowerCase());
+  let AI_CONFIGURED = false;
   const COMPETITION_EN = COMPETITION_MODE && params.get("lang") === "en";
   const RELATIONSHIP_DEMO = params.get("demo") === "relationship";
   const DEMO_MODE = RELATIONSHIP_DEMO || COMPETITION_MODE;
@@ -503,6 +504,7 @@ let interviewSummary = "";
     }
     if (/未配置|未配置|密钥|api.?key|401|403|unauthoriz/i.test(text)) return COMPETITION_EN ? "The server has no usable AI key." : "服务器尚未配置可用的 AI 密钥。";
     if (/地图字段|缺少有效来源|校验|JSON|格式|invalid|validation/i.test(text)) return COMPETITION_EN ? "The AI replied, but its map was not reliable enough to show." : "AI 已返回内容，但问题地图校验未通过，暂不显示。";
+    if (/fetch failed|connect|timeout|ECONNRESET|network/i.test(text)) return COMPETITION_EN ? "The configured AI provider could not be reached." : "当前无法连接已配置的 AI 服务。";
     return COMPETITION_EN ? "The AI request could not be completed." : "AI 请求没有完成，可能是网络或服务暂时不可用。";
   }
 
@@ -533,6 +535,7 @@ let interviewSummary = "";
     const fallbackOffered = currentResult.type === "reflection" && mapRequestState === "fallback-offered";
     const syntheticMap = currentResult.type === "reflection" && mapRequestState === "synthetic";
     $("#resultPanel").classList.toggle("awaiting-depth", awaitingMap);
+    $("#deepDiveCard").classList.toggle("is-failure", fallbackOffered);
     $("#resultTitle").textContent = fallbackOffered ? "实时回答暂时不可用" : syntheticMap ? "合成示例 · 可修改的问题地图" : localMap ? "猫先整理了一张本地问题地图" : awaitingMap ? "稍等，猫在整理刚才说到的事" : deepDiveEnhanced && currentResult.type === "reflection" ? "猫有一个猜想，你看看像不像" : currentResult.title;
     const asked = answeredFields();
     if (deepSynthesis?.map) {
@@ -563,7 +566,7 @@ let interviewSummary = "";
     $("#deepDiveButton").disabled = loadingMap;
     $("#skipDeepButton").textContent = "继续查看合成示例";
     $("#skipDeepButton").classList.toggle("hidden", !fallbackOffered);
-    $("#setupApiKeyButton").classList.toggle("hidden", HOSTED_COMPETITION || !COMPETITION_MODE || !fallbackOffered);
+    $("#setupApiKeyButton").classList.toggle("hidden", HOSTED_COMPETITION || AI_CONFIGURED || !COMPETITION_MODE || !fallbackOffered);
     $("#deepDiveStatus").textContent = "";
     const competitionControls = COMPETITION_MODE && (fallbackOffered || syntheticMap || loadingMap);
     $("#deepDiveCard").classList.toggle("hidden", !eligible || (Boolean(deepSynthesis) && !localMap && !competitionControls));
@@ -772,7 +775,7 @@ let interviewSummary = "";
     ["#setupApiKeyStatusLink", "#setupApiKeyNavLink"].forEach((selector) => {
       const link = $(selector);
       if (!link) return;
-      link.classList.toggle("hidden", HOSTED_COMPETITION || !apiUnavailable);
+      link.classList.toggle("hidden", HOSTED_COMPETITION || AI_CONFIGURED || !apiUnavailable);
       link.textContent = COMPETITION_EN ? "Add API key" : "添加 API 密钥";
     });
     if (!COMPETITION_MODE) return;
@@ -809,6 +812,7 @@ let interviewSummary = "";
     $("#demoNav").setAttribute("aria-label", "Competition demo navigation");
     $(".progress-wrap").setAttribute("aria-label", "Progress");
     $(".cat-analysis")?.setAttribute("aria-label", "Cat's temporary understanding and Adlerian lens");
+    set(".cat-analysis > div:first-child > span", "Cat's temporary understanding");
     set("#demoNav span", responseStatus);
     $(".competition-only")?.classList.remove("hidden");
     document.querySelectorAll("[data-competition-label]").forEach((button) => { button.textContent = button.dataset.competitionLabel; });
@@ -1574,7 +1578,7 @@ let interviewSummary = "";
       const labels = ["Original judgment", "What actually happened", "My view now", "Still unknown", "Cat's summary"];
       document.querySelectorAll(".closing-summary-list dt").forEach((node, index) => { node.textContent = labels[index]; });
       $(".save-choices legend").textContent = "Save anything from this session?";
-      const saves = ["Save this with Cat", "Don’t save", "Come back after I try it"];
+      const saves = ["Save this with Cat", "Don't save", "Come back after I try it"];
       document.querySelectorAll('.save-choices input[name="journeySave"]').forEach((input, index) => { input.parentElement.lastChild.textContent = ` ${saves[index]}`; });
       $("#journeyClosingLine").textContent = "That’s enough for today. If this comes up again, Cat will be here.";
       $("#finishJourneyButton").textContent = pending ? "End this reflection" : "Finish";
@@ -2698,7 +2702,7 @@ let interviewSummary = "";
   });
 
   const localBadge = document.createElement("span"); localBadge.textContent = COMPETITION_MODE ? (COMPETITION_EN ? "Cat · Example input · Nothing saved" : "猫 · 合成示例输入 · 不保存") : RELATIONSHIP_DEMO ? "固定演示 · 不联网 · 不保存" : "本地安全判断 · 猫联网整理地图"; $(".status-strip").append(localBadge);
-  if (COMPETITION_MODE && !HOSTED_COMPETITION) fetch("/api/config/status").then((response) => response.ok ? response.json() : {}).then((status) => { HOSTED_COMPETITION = Boolean(status.hostedCompetition); updateCompetitionStatus(); }).catch(() => {});
+  if (COMPETITION_MODE && !HOSTED_COMPETITION) fetch("/api/config/status").then((response) => response.ok ? response.json() : {}).then((status) => { HOSTED_COMPETITION = Boolean(status.hostedCompetition); AI_CONFIGURED = Boolean(status.configured); updateCompetitionStatus(); }).catch(() => {});
   $("#enterDeskButton").addEventListener("click", () => enterDesk());
   if (DEMO_MODE) {
     if (!COMPETITION_MODE || params.has("view")) enterDesk({ animate: false });

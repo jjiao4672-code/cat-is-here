@@ -136,7 +136,7 @@ test("depth stages must cover evidence, alternatives, consequences, and possible
   assert.match(server, /reflectionStages = \[[\s\S]*mode: "evidence"[\s\S]*mode: "counterevidence"[\s\S]*mode: "alternative"[\s\S]*mode: "action"[\s\S]*mode: "result"[\s\S]*mode: "protective_purpose"/);
   assert.match(server, /依据、反例、替代解释和保护作用尚未问全/);
   assert.match(server, /不能断言用户故意这样做/);
-  assert.match(server, /resultHeldBack[\s\S]*没有带来能核对/);
+  assert.match(server, /resultHeldBack[\s\S]*没有带来核对原判断的新事实/);
   assert.match(server, /protectivePurpose[\s\S]*由你判断，不是事实/);
   assert.match(script, /function applyInterviewAnswersToSynthetic/);
   assert.match(script, /base\.map = \{ \.\.\.base\.map, \.\.\.byField, fact: openingNote \}/);
@@ -231,4 +231,13 @@ test("competition remains bilingual and persistence-free", () => {
   assert.match(server, /English competition output contains Chinese text/);
   assert.match(script, /putRecord = \(record\) => DEMO_MODE \? Promise\.resolve/);
   assert.match(script, /putCycle = \(cycle\) => DEMO_MODE \|\| !cycle\.remembered/);
+});
+
+test("map output keeps complete text, grounded fact sources, and uncertain third-party reactions", () => {
+  assert.match(server, /String\(body\.note \|\| ""\)\.trim\(\) \? \["ENTRY_01"\]/);
+  assert.match(server, /return `\$\{clipped\}…`/);
+  assert.match(server, /No new fact checked this judgment/);
+  assert.match(server, /地图字段 \$\{key\} 缺少有效来源/);
+  assert.match(server, /实验不能把第三方的不回应或含糊反应解释成确定动机/);
+  assert.match(server, /choose a time that works for you/);
 });

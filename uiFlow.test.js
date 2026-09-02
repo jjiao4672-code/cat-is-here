@@ -151,7 +151,9 @@ test("competition fallback is explicit and usable after live retries", () => {
   assert.match(script, /Ask Cat to try again/);
   assert.match(html, /id="setupApiKeyButton"[^>]*>添加 API 密钥</);
   assert.match(script, /setupApiKeyButton"\)\.addEventListener\("click", \(\) => \{ window\.location\.href = "\/api-setup\.html"/);
-  assert.match(script, /setupApiKeyButton"\)\.classList\.toggle\("hidden", HOSTED_COMPETITION \|\| !COMPETITION_MODE \|\| !fallbackOffered\)/);
+  assert.match(script, /setupApiKeyButton"\)\.classList\.toggle\("hidden", HOSTED_COMPETITION \|\| AI_CONFIGURED \|\| !COMPETITION_MODE \|\| !fallbackOffered\)/);
+  assert.match(script, /AI_CONFIGURED = Boolean\(status\.configured\)/);
+  assert.match(fs.readFileSync("styles.css", "utf8"), /\.deep-dive-card\.is-failure\{grid-template-columns:minmax\(0,1fr\)/);
   assert.match(html, /id="setupApiKeyNavLink"[^>]*href="\/api-setup\.html"/);
   assert.match(script, /setupApiKeyStatusLink", "#setupApiKeyNavLink"/);
   assert.match(script, /followup-api-link/);
@@ -531,6 +533,7 @@ test("visible cat copy avoids mixed imagery and report language", () => {
 });
 
 test("English competition copy stays conversational", () => {
+  assert.match(script, /set\("\.cat-analysis > div:first-child > span", "Cat's temporary understanding"\)/);
   assert.match(script, /Choose a broad category\. If one specific event already comes to mind, write it instead/);
   assert.match(script, /Did Cat put this in the right order/);
   assert.match(script, /What small step could give you new information/);
@@ -606,4 +609,8 @@ test("memory is explicit, structured, deletable, and similarity can be declined"
   assert.match(script, /find\(\(item\) => item\.eventType === eventType\)/);
   assert.match(script, /similarityDismissed = true/);
   assert.match(script, /pendingSimilarRecord = null/);
+});
+
+test("save choices align radio controls with their labels", () => {
+  assert.match(fs.readFileSync("styles.css", "utf8"), /\.update-choices label,\.save-choices label\{[^}]*align-items:center/);
 });

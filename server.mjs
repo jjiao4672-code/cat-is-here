@@ -214,10 +214,21 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   const missingValue = (key) => language === "en" ? (key === "unknown" ? "Not yet known" : "Not asked yet") : (key === "unknown" ? "还不知道" : "还没说到");
   const cleanedMap = Object.fromEntries(requiredMapKeys.map((key) => [key, cleanVisible(typeof data.map[key] === "string" ? data.map[key] : missingValue(key), `地图字段 ${key}`)]));
   const concepts = Array.isArray(data.concepts) ? data.concepts.filter((item) => allowedConcepts.includes(item?.name)).slice(0, 3) : [];
+  const normalizeExperimentText = (value) => {
+    let text = String(value || "");
+    if (english) text = text
+      .replace(/choose a (?:calm|quiet) (?:moment|time)/gi, "choose a time that works for you")
+      .replace(/when you are calm/gi, "when you choose")
+      .replace(/wait until you are calm/gi, "choose when to continue");
+    return text;
+  };
   const formatExperiment = (item, index) => {
-    const action = String(item?.action || item?.description || "").slice(0, 320);
+    const action = normalizeExperimentText(item?.action || item?.description).slice(0, 320);
     if (/秘密试探|暗中测试|操纵|故意冷落|逼迫对方|secretly test|manipulat/i.test(action)) throw new Error("实验必须是用户可控制的行动，不能秘密试探或操纵他人");
-    return { id: String(item?.id || `experiment_${index + 1}`).slice(0, 32), title: String(item?.title || defaults.title).slice(0, 80), prediction: String(item?.prediction || defaults.prediction).slice(0, 280), action, observableOutcome: String(item?.observableOutcome || defaults.outcome).slice(0, 320), continueCondition: String(item?.continueCondition || defaults.continue).slice(0, 280), fallback: String(item?.fallback || defaults.fallback).slice(0, 280), resultMeaning: String(item?.resultMeaning || defaults.meaning).slice(0, 320), needsPattern: Boolean(item?.needsPattern), description: action };
+    const resultMeaning = normalizeExperimentText(item?.resultMeaning || defaults.meaning).slice(0, 320);
+    const experimentBoundary = [action, resultMeaning, item?.fallback].join(" ");
+    if (/(?:no (?:reply|answer)|avoid\w*|vague\w*).{0,60}(?:means?|shows?|tells you|supports?).{0,50}(?:not ready|want\w* distance|distanc\w*|end the relationship)/i.test(experimentBoundary)) throw new Error("实验不能把第三方的不回应或含糊反应解释成确定动机");
+    return { id: String(item?.id || `experiment_${index + 1}`).slice(0, 32), title: String(item?.title || defaults.title).slice(0, 80), prediction: normalizeExperimentText(item?.prediction || defaults.prediction).slice(0, 280), action, observableOutcome: normalizeExperimentText(item?.observableOutcome || defaults.outcome).slice(0, 320), continueCondition: normalizeExperimentText(item?.continueCondition || defaults.continue).slice(0, 280), fallback: normalizeExperimentText(item?.fallback || defaults.fallback).slice(0, 280), resultMeaning, needsPattern: Boolean(item?.needsPattern), description: action };
   };
   const experiments = Array.isArray(data.experiments) ? data.experiments.slice(0, 1).map(formatExperiment) : [];
   if (!experiments.length) experiments.push(formatExperiment({ id: "observe", title: defaults.title, action: data.experiment || defaults.action }, 0));
@@ -226,9 +237,15 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   ["fact", "meaning", "feeling", "move", "result"].forEach((key) => {
     if (sourceValuesByField[key]) cleanedMap[key] = cleanVisible(sourceValuesByField[key], `用户确认的地图字段 ${key}`);
   });
+  const clipVisible = (value, max) => {
+    const text = String(value).trim();
+    if (text.length <= max) return text;
+    const clipped = text.slice(0, max - 1).replace(/\s+\S*$/, "").replace(/[\s,;:。.!?？]+$/, "").trim();
+    return `${clipped}…`;
+  };
   const brief = (value, max) => {
     const text = String(value).trim().replace(/[。.!?？]+$/, "");
-    return text.length <= max ? text : text.slice(0, max).replace(/\s+\S*$/, "").trim();
+    return clipVisible(text, max);
   };
   const probe = (mode) => String(probeAnswers[mode] || "").trim();
   const protectivePurpose = probe("protective_purpose");
@@ -247,9 +264,9 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
   let resultHeldBack = false;
   if (sourceValuesByField.result && sourceValuesByField.meaning && sourceValuesByField.move && !missingMapValue.test(sourceValuesByField.result)) {
     resultHeldBack = /停止|没(?:有)?做|没有采取|回避|退后|拖延|反复|等待|stopp|no action|did not|avoid|held back|withdrew|kept checking|waited/i.test(sourceValuesByField.move);
-    cleanedMap.result = english
-      ? `${brief(sourceValuesByField.result, 105)}. ${resultHeldBack ? `That response produced no new check of “${brief(sourceValuesByField.meaning, 65)}”, so the judgment may keep feeling true.` : `This is one piece of real-world information, but it does not by itself prove “${brief(sourceValuesByField.meaning, 65)}”.`}`.slice(0, 220)
-      : `${brief(sourceValuesByField.result, 52)}。${resultHeldBack ? `这个反应没有带来能核对“${brief(sourceValuesByField.meaning, 34)}”的新事实，所以原判断可能继续显得很真。` : `这是一条现实信息，但还不能单独证明“${brief(sourceValuesByField.meaning, 34)}”。`}`.slice(0, 220);
+    cleanedMap.result = clipVisible(english
+      ? `${brief(sourceValuesByField.result, 120)}. ${resultHeldBack ? "No new fact checked this judgment, so it may still feel true." : `This is one piece of real-world information, but it does not by itself prove “${brief(sourceValuesByField.meaning, 65)}”.`}`
+      : `${brief(sourceValuesByField.result, 72)}。${resultHeldBack ? "这个反应没有带来核对原判断的新事实，所以它可能继续显得很真。" : `这是一条现实信息，但还不能单独证明“${brief(sourceValuesByField.meaning, 34)}”。`}`, 220);
   }
   const adlerAnalysis = protectivePurpose && !missingMapValue.test(protectivePurpose) && !deniesProtection
     ? english
@@ -260,11 +277,11 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
       : { title: "主观意义", explanation: `阿德勒视角会把事件和你赋予它的意义分开。“${brief(cleanedMap.fact, 22)}”是发生的事。“${brief(cleanedMap.meaning, 24)}”是你当时的理解，这个理解又和接下来的行动连在一起。`, evidence: "这是根据你说的事件、判断和行动整理的。", uncertainty: "这只是目前的一种读法，不是事实，也不是对你人格的判断。" };
   const counterevidence = probe("counterevidence");
   const alternative = probe("alternative");
-  if (counterevidence || alternative) cleanedMap.unknown = english
-    ? `Still unresolved: ${counterevidence || "what would weaken the judgment"}. Another possible explanation: ${alternative || "not yet known"}.`.slice(0, 220)
-    : `仍待核对：${counterevidence || "什么会让原判断没那么确定"}。其他可能解释：${alternative || "还不知道"}。`.slice(0, 220);
+  if (counterevidence || alternative) cleanedMap.unknown = clipVisible(english
+    ? `Still unresolved: ${brief(counterevidence || "what would weaken the judgment", 95)}. Another possible explanation: ${brief(alternative || "not yet known", 95)}.`
+    : `仍待核对：${brief(counterevidence || "什么会让原判断没那么确定", 80)}。其他可能解释：${brief(alternative || "还不知道", 80)}。`, 220);
   const insight = language === "en"
-    ? `Cat read what you wrote. “${brief(cleanedMap.fact, 55)}” seemed to mean “${brief(cleanedMap.meaning, 58)}”. You felt “${brief(cleanedMap.feeling, 35)}”. Then you “${brief(cleanedMap.move, 45)}”. ${resultHeldBack ? "The result may have left that judgment with too little new evidence." : "The result adds one clue, but does not settle the judgment."} Does that fit?`
+    ? `Cat read what you wrote. “${brief(cleanedMap.fact, 120)}” seemed to mean “${brief(cleanedMap.meaning, 90)}”. You felt “${brief(cleanedMap.feeling, 50)}”. Then you “${brief(cleanedMap.move, 80)}”. ${resultHeldBack ? "The result may have left that judgment with too little new evidence." : "The result adds one clue, but does not settle the judgment."} Does that fit?`
     : `猫看完了。发生“${brief(cleanedMap.fact, 22)}”时，你想到“${brief(cleanedMap.meaning, 20)}”。你感到“${brief(cleanedMap.feeling, 12)}”，接着“${brief(cleanedMap.move, 20)}”。${resultHeldBack ? "这个结果可能让原判断继续缺少新的现实核对。" : "这个结果增加了一条线索，但还不能单独证明原判断。"}你看看像不像。`;
   const qualityIssues = [...summaryIssues(insight), ...outputIssues(data), ...metaphorIssues(insight)];
   if (reportVoice.test(insight)) qualityIssues.push("report_voice");
@@ -277,6 +294,7 @@ function validateSynthesis(data, allowedSourceRefs = [], language = "zh", source
     const refs = (sourceByField[key] || []).filter((ref) => !allowed.size || allowed.has(ref)).slice(0, 4);
     return [key, refs];
   }));
+  for (const key of mapKeys) if (!missingMapValue.test(cleanedMap[key]) && !mapSources[key].length) throw new Error(`地图字段 ${key} 缺少有效来源`);
   const synthesis = {
     insight,
     adlerAnalysis,
@@ -417,7 +435,7 @@ ${catLiteraryStyle}
       const text = JSON.stringify({ note: body.note || "", notes: body.notes || {}, result: body.result || {}, stateAnswers: body.stateAnswers || {}, answers: body.answers || [] });
       if (hasSafetyLanguage(text)) return send(res, 400, { error: "这段内容可能关系到安全，请先使用现实支持" });
       const theme = body.topic === "slow_reply" ? "对方回复变慢" : (body.result?.title || "当前日常困扰");
-      const sourceRefs = [...Object.keys(body.stateAnswers || {}), ...(Array.isArray(body.answers) ? body.answers.map((answer) => answer?.id).filter(Boolean) : [])];
+      const sourceRefs = [...(String(body.note || "").trim() ? ["ENTRY_01"] : []), ...Object.keys(body.stateAnswers || {}), ...(Array.isArray(body.answers) ? body.answers.map((answer) => answer?.id).filter(Boolean) : [])];
       const sourceByField = { fact: ["ENTRY_01"], meaning: [], feeling: [], move: [], result: [], hypothesis: sourceRefs, unknown: sourceRefs };
       const sourceValuesByField = { fact: String(body.note || "").trim() };
       (Array.isArray(body.answers) ? body.answers : []).forEach((answer) => {
