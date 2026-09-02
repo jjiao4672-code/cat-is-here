@@ -188,9 +188,10 @@ test("competition presets show two distinct mechanisms without promising an idea
   assert.match(script, /You still do not know where the conversation will lead\. You no longer have to rely only on guessing/);
   assert.match(script, /even while afraid, you could take the part you controlled and ask reality for information/);
   assert.match(script, /synthetic example input/);
-  assert.match(demoScript, /0:25 to 2:35[\s\S]*choose Relationship[\s\S]*2:35 to 2:55[\s\S]*Job search example[\s\S]*2:55 to 3:35[\s\S]*3:35 to 4:00/);
-  assert.match(demoScript, /cannot go beyond ten[\s\S]*summary screen/);
-  assert.ok(demoScript.indexOf("choose Relationship") < demoScript.indexOf("Job search example"));
+  assert.match(demoScript, /approximately 1 minute 51 seconds[\s\S]*0:12 to 0:26[\s\S]*Relationship example[\s\S]*0:50 to 1:04[\s\S]*Job search example[\s\S]*1:29 to 1:40[\s\S]*failure state[\s\S]*1:40 to 1:51/);
+  assert.match(demoScript, /Nothing becomes part of the map unless the user selects it or writes it/);
+  assert.match(demoScript, /no fixed result appears silently[\s\S]*continuously labeled synthetic example/);
+  assert.ok(demoScript.indexOf("Relationship example") < demoScript.indexOf("Job search example"));
   assert.doesNotMatch(`${script}\n${demoScript}`, /you have become yourself|你已经成为了你自己/i);
 });
 

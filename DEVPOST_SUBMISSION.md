@@ -43,7 +43,7 @@ The interface uses native HTML, CSS, and JavaScript. IndexedDB stores only confi
 
 Safety routing happens in the browser before ordinary reflection. The service limits request size, removes common direct identifiers, treats user text as untrusted data, and validates model output before display. Questions must target an allowed field and must not repeat or add unsupported self-judgment. Maps must cite valid source IDs, preserve uncertainty, avoid diagnosis, and keep experiments under the user's control.
 
-Competition mode disables browser persistence. The deployed server will hold the model key in an environment variable, so judges will not enter their own key.
+Competition mode disables browser persistence. The deployed server holds the model key in an environment variable, so judges do not enter their own key.
 
 ## Challenges
 
@@ -60,7 +60,7 @@ Model reliability was another problem. Generated JSON can be empty, malformed, r
 - User-written summary before AI synthesis.
 - Editable maps and experiments with explicit uncertainty.
 - Competition mode with no Local Storage or IndexedDB writes.
-- 114 passing automated checks.
+- 116 passing automated checks.
 - Chinese and English flows for desktop and mobile layouts.
 
 ## What we learned

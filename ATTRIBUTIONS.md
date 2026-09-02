@@ -22,6 +22,10 @@ This project uses the unmodified font in the interface and does not sell it sepa
 
 `GITHUB_SIMILAR_PROJECTS.md` lists products and repositories reviewed while defining the product. Code from repositories without a compatible explicit license was not copied.
 
+## Audio and editing
+
+The competition video was edited in ChatCut. Its English narration uses ChatCut's Mark synthetic voice. The current cut contains no background music or third-party commercial song.
+
 ## Ownership and license
 
 No open-source license has been granted yet. Project code and original assets remain copyright of the project owner unless a license is added later.

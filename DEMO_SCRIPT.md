@@ -1,63 +1,65 @@
-# Cat Is Here: four-minute demo draft
+# Cat Is Here: final competition video
 
-Open `https://cat-is-here.onrender.com/?demo=competition&lang=en`. Record a successful run in advance. Use clean cuts to stay under four minutes, and do not present the edited sequence as an uninterrupted run. Keep a short, separate failure clip as backup.
+Target duration: approximately 1 minute 51 seconds. Keep the exported video under four minutes.
 
-## 0:00 to 0:25
+- Live experience: https://cat-is-here.onrender.com/?demo=competition&lang=en
+- Source: https://github.com/jjiao4672-code/cat-is-here
 
-“A difficult conversation has not happened yet, but someone is already living inside its worst ending. The fear changes what they do. Avoiding the conversation brings short relief, then more guessing.”
+The edited sequence is a product walkthrough, not a claim that every model response arrives at the same speed or uses identical wording.
 
-Show the landing screen and click **I'm ready**.
+## 0:00 to 0:12 | The problem
 
-## 0:25 to 2:35
+Show the landing screen and the cat before entering the product.
 
-Open **Use an example** and choose Relationship. Point out that the example fills only an editable opening event.
+Frame the human problem first: fear of a bad answer can leave someone repeatedly guessing instead of getting new information.
 
-Submit it. Answer the questions naturally. The live path asks for a concrete event when needed, asks about feeling early, then follows the confirmed answers through interpretation, action, and result. It may finish early and cannot go beyond ten questions.
+## 0:12 to 0:26 | Adaptive questions
 
-Say:
+Open the labeled Relationship example and show that its short opening event remains editable. Show **Live AI** while Cat asks one question at a time based on the user's confirmed answers.
 
-“Cat asks one question at a time. An option is only an answer the user may choose. It is never treated as a fact until selected, and the user can always write something else.”
+Make clear that displayed options are suggestions only. Nothing becomes part of the map unless the user selects it or writes it.
 
-When the summary screen appears, write one sentence in the user's own words. Confirm Cat's short reflection. Then show the editable map.
+## 0:26 to 0:37 | Problem Map
 
-Say:
+Show the single-column map: event, interpretation, feeling, action or inaction, and result. Point out that the feared breakup remains a prediction, while reduced contact and the user's avoidance are the known information.
 
-“The map keeps the event separate from the user's interpretation. In this example, the feared ending is still a prediction. Avoiding the conversation has prevented new information from arriving.”
+## 0:37 to 0:50 | One small action
 
-Edit one map field, confirm it, and choose **Think of one small action**. Let the user write the action first. Ask Cat for a suggestion only if needed.
+Let the user propose the action first. Show Cat narrowing it to a controllable, low-risk step and turning it into an editable experiment.
 
-Choose a clear, non-accusing invitation and set a real sending time. Take the action-now branch. Record the only observed reply: “Saturday works.” Let the user decide how the original worry looks before showing Cat's summary.
+Success is completing the part the user controls and receiving new information, not receiving an ideal response.
 
-Say:
+## 0:50 to 1:04 | A second mechanism
 
-“The relationship outcome is still unknown. The new fact is smaller: the user started the conversation and received a time. Success here is the controllable action and the information it produced, not an ideal answer.”
+Briefly show the Job search example. Missing replies can become a judgment about ability and lead to stopping applications. Do not repeat the full journey.
 
-## 2:35 to 2:55
+This contrast demonstrates that the product is not a fixed relationship script.
 
-Return to Input and open the Job search example.
+## 1:04 to 1:29 | How it works
 
-Say:
+Show the implementation card or concise architecture visual.
 
-“The same product handles a different pattern. Missing replies can become a judgment about ability. Cat treats ‘my ability is not enough’ as a judgment only when the user actually says it, then asks what fact could revise it.”
+Explain only the evidence that matters: safety routing runs before ordinary reflection, the model receives the minimum current context, each new inference is correctable, structured output is validated against source IDs, and the user chooses whether confirmed records are saved. Competition mode writes nothing to Local Storage or IndexedDB.
 
-Do not repeat the full loop.
+## 1:29 to 1:40 | Honest failure boundary
 
-## 2:55 to 3:35
+Show the labeled failure state. If Live AI is unavailable, no fixed result appears silently. The user may retry or explicitly continue with a continuously labeled synthetic example.
 
-Show the map and architecture briefly.
+## 1:40 to 1:51 | Observation and close
 
-Say:
+Show the observed reply, “Saturday works.” The relationship outcome remains unknown. The user has still taken one controllable step and replaced some guessing with a real piece of information.
 
-“Safety routing runs before ordinary reflection. The server removes common direct identifiers and treats user text as untrusted. Questions are checked for repetition, unsupported self-judgment, target field, and language. Maps are checked for source IDs, uncertainty, diagnosis, and controllable actions. Competition mode saves nothing to Local Storage or IndexedDB.”
-
-For the backup failure clip:
-
-“If final map generation fails, no fixed map appears automatically. The user can retry Live AI or choose a clearly labeled synthetic example.”
-
-## 3:35 to 4:00
-
-“Cat Is Here is not therapy, diagnosis, or crisis support. It helps a person slow down one judgment, take one step they control, and update their view from what actually happened.”
+Close with the product boundary: Cat Is Here is AI-assisted reflection, not therapy, diagnosis, or crisis support.
 
 End card:
 
 > One event. One editable guess. One action that can bring back information.
+
+## Upload description
+
+Cat Is Here helps a person move from repeated guessing to one small real-world test. The experience uses adaptive AI questions, an editable Problem Map, and a user-controlled action to turn an uncertain interpretation into something reality can update.
+
+- Try it: https://cat-is-here.onrender.com/?demo=competition&lang=en
+- Source code: https://github.com/jjiao4672-code/cat-is-here
+
+Cat Is Here is not therapy, diagnosis, or crisis support.
