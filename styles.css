@@ -877,3 +877,11 @@ textarea::placeholder,input::placeholder{color:#817667;opacity:1}
   .landing-logo{width:30px;height:30px}
   .landing-header{gap:7px}
 }
+
+.founding-interest-card{display:grid;justify-items:start;gap:8px;margin-top:24px;padding:20px 22px;border:1px solid #c8d0ad;border-radius:6px;background:#eef2df}
+.founding-interest-card>span{color:var(--sage-deep);font-size:12px;font-weight:800;letter-spacing:.08em}
+.founding-interest-card h3,.founding-interest-card p{margin:0}
+.founding-interest-card p{max-width:66ch;color:var(--muted);line-height:1.65}
+.founding-interest-card .primary-button{display:inline-flex;align-items:center;justify-content:center;margin-top:4px;text-decoration:none}
+.founding-interest-card small{color:var(--muted);line-height:1.5}
+.crisis-mode .founding-interest-card,.awaiting-depth .founding-interest-card{display:none}

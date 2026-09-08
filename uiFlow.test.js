@@ -615,3 +615,14 @@ test("memory is explicit, structured, deletable, and similarity can be declined"
 test("save choices align radio controls with their labels", () => {
   assert.match(fs.readFileSync("styles.css", "utf8"), /\.update-choices label,\.save-choices label\{[^}]*align-items:center/);
 });
+
+test("paid-interest validation follows the free result without taking payment", () => {
+  assert.match(html, /id="foundingInterestCard"/);
+  assert.match(html, /第一次完整问题整理保持免费/);
+  assert.match(html, /docs\.google\.com\/forms\/d\/e\/1FAIpQLScI2OTDAV_FAai4m3NcNeR0cAQUbXKV_mp6P4E4lh3Ci4mpgw\/viewform/);
+  assert.match(html, /id="foundingInterestLink"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
+  assert.doesNotMatch(html, /立即付款|购买成功|checkout/);
+  assert.match(script, /Would you pay for Cat to stay with the follow-through/);
+  const css = fs.readFileSync("styles.css", "utf8");
+  assert.match(css, /\.crisis-mode \.founding-interest-card,\.awaiting-depth \.founding-interest-card\{display:none\}/);
+});
