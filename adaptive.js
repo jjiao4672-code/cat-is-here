@@ -581,7 +581,8 @@ let interviewSummary = "";
   }
 
   function mapCanExperiment(map = document.querySelector("[data-map-key]") ? editedMap() : deepSynthesis?.map) {
-    return Boolean(map && [map.fact, map.meaning].every((value) => validVisible(value) && !semanticMissing.test(value)));
+    const usable = (value) => validVisible(value) && !semanticMissing.test(value);
+    return Boolean(map && usable(map.fact) && [map.meaning, map.hypothesis].some(usable));
   }
 
   const feedbackAllowsExperiment = () => ["很像", "有一点像"].includes(feedback);
@@ -924,9 +925,10 @@ let interviewSummary = "";
       set("#resultPanel .disclaimer", "Cat Is Here supports self-reflection. It is not psychotherapy, medical diagnosis, or crisis intervention. If there is an immediate risk of self-harm, suicide, or violence, contact a trusted person and local emergency or crisis support now.");
       set("#foundingInterestCard > span", "HELP SHAPE WHAT COMES NEXT");
       set("#foundingInterestTitle", "Would you pay for Cat to stay with the follow-through?");
-      set("#foundingInterestDescription", "We’re testing two options: one focused follow-up for ¥19.9, or ongoing support for ¥29/month or ¥199/year. Nothing is charged today; the survey takes about a minute.");
+      set("#foundingInterestDescription", "We’re testing two options: one focused follow-up for $2.99, or ongoing support for $4.99/month or $39.99/year. Nothing is charged today; the survey takes about a minute.");
       set("#foundingInterestLink", "Share your interest");
-      set("#foundingInterestNote", "Your first complete reflection stays free. The current survey opens in Chinese in a new tab.");
+      $("#foundingInterestLink").href = "https://docs.google.com/forms/d/e/1FAIpQLScETEQeObCApt2XTO-8l78XQBP7OwI8B7FEAdJlr_TyrsBAEg/viewform?usp=publish-editor";
+      set("#foundingInterestNote", "Your first complete reflection stays free. The survey opens in a new tab.");
       set("#resultPanel .confirm-card .result-step", "MAP CHECK");
       set("#resultPanel .confirm-card h3", "Did Cat put this in the right order?");
       set("#resultPanel .confirm-card > p", "You can edit any step. Only confirmed parts move into an action.");
@@ -2445,9 +2447,10 @@ let interviewSummary = "";
   $("#toExperimentButton").addEventListener("click", async () => {
     if (!feedbackAllowsExperiment() || !mapCanExperiment(editedMap())) return;
     const confirmedMap = editedMap();
+    const experimentPrediction = validVisible(confirmedMap.meaning) && !semanticMissing.test(confirmedMap.meaning) ? confirmedMap.meaning : confirmedMap.hypothesis;
     await saveObservation({ silent: true });
     deepSynthesis.map = confirmedMap;
-    deepSynthesis.experiments = deepSynthesis.experiments.map((experiment) => ({ ...experiment, prediction: confirmedMap.meaning }));
+    deepSynthesis.experiments = deepSynthesis.experiments.map((experiment) => ({ ...experiment, prediction: experimentPrediction }));
     showDeskExperiment();
   });
   ["#experimentPrediction", "#experimentAction", "#experimentOutcome", "#experimentContinue", "#experimentFallback", "#experimentMeaning", "#experimentWhen", "#experimentContext"].forEach((selector) => {

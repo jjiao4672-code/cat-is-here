@@ -91,7 +91,8 @@ test("secondary meaning probes cannot replace the user's main interpretation", (
   assert.match(server, /!isCoreFieldAnswer\(answer\)/);
   assert.match(script, /answeredFields = \(\) => new Set\(deepAnswers\.filter\(isCoreFieldAnswer\)/);
   assert.match(script, /deepSynthesis\.map = confirmedMap/);
-  assert.match(script, /prediction: confirmedMap\.meaning/);
+  assert.match(script, /experimentPrediction = validVisible\(confirmedMap\.meaning\)[\s\S]*\? confirmedMap\.meaning : confirmedMap\.hypothesis/);
+  assert.match(script, /prediction: experimentPrediction/);
 });
 
 test("the map action field cannot be filled by a future experiment", () => {

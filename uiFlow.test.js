@@ -63,8 +63,10 @@ test("the confirmed map hands off to an experiment on the desk", () => {
 
 test("experiment eligibility follows the visible edited map", () => {
   assert.match(script, /function mapCanExperiment\(map = document\.querySelector\("\[data-map-key\]"\) \? editedMap\(\) : deepSynthesis\?\.map\)/);
+  assert.match(script, /usable\(map\.fact\) && \[map\.meaning, map\.hypothesis\]\.some\(usable\)/);
   assert.match(script, /input\.addEventListener\("input", \(\) => \{ \$\("#toExperimentButton"\)\.disabled = !feedbackAllowsExperiment\(\) \|\| !mapCanExperiment\(\); \}\)/);
   assert.match(script, /if \(!feedbackAllowsExperiment\(\) \|\| !mapCanExperiment\(editedMap\(\)\)\) return/);
+  assert.match(script, /prediction: experimentPrediction/);
 });
 
 test("visible branding uses 猫在 and the proper name Cat Is Here", () => {
@@ -623,6 +625,8 @@ test("paid-interest validation follows the free result without taking payment", 
   assert.match(html, /id="foundingInterestLink"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
   assert.doesNotMatch(html, /立即付款|购买成功|checkout/);
   assert.match(script, /Would you pay for Cat to stay with the follow-through/);
+  assert.match(script, /one focused follow-up for \$2\.99/);
+  assert.match(script, /1FAIpQLScETEQeObCApt2XTO-8l78XQBP7OwI8B7FEAdJlr_TyrsBAEg/);
   const css = fs.readFileSync("styles.css", "utf8");
   assert.match(css, /\.crisis-mode \.founding-interest-card,\.awaiting-depth \.founding-interest-card\{display:none\}/);
 });
